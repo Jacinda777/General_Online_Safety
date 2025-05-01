@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>FAQs - SafeGuard</title>
+    <style>
+        :root {         
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --border-radius-button: 8px;
+            --border-radius-default: 12px;
+            --border-radius-full: 9999px;
+            --muted: #4b5563;
+            --border: #e2e8f0;
+            --card-bg: #ffffff;
+            --accent: #3b82f6;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3b82f6;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 10vw;
+            --sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background: #f1f5f9;
+            padding-left: var(--sidebar-width);
+            transition: padding-left var(--sidebar-transition);
+        }
+
+        body.collapsed {
+            padding-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            width: 90vw;
+            max-width: 90vw;
+            margin: 0 auto;
+            transition: padding var(--sidebar-transition);
+        }
+
+        /* FAQ Container */
+        .faq-container {
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            border-radius: var(--border-radius-default);
+            box-shadow: var(--shadow-sm);
+            padding: 2.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .faq-container h1 {
+            font-size: clamp(1.75rem, 4vw, 2rem);
+            font-weight: 600;
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .faq-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .faq-question {
+            width: 100%;
+            text-align: left;
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            font-weight: 500;
+            border: none;
+            border-radius: var(--border-radius-button);
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .faq-question:hover,
+        .faq-question:focus {
+            background: #1e40af;
+            transform: translateY(-2px);
+            outline: none;
+        }
+
+        .faq-question::after {
+            content: '\f078'; /* Font Awesome chevron-down */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+
+        .faq-question[aria-expanded="true"]::after {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 1rem;
+            background: var(--secondary);
+            border-left: 4px solid var(--primary);
+            margin-top: 0.5rem;
+            border-radius: var(--border-radius-button);
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .faq-answer.show {
+            display: block;
+        }
+
+        .faq-answer p {
+            margin: 0;
+        }
+
+        .faq-answer ul {
+            margin: 0.5rem 0 0 1.5rem;
+            padding: 0;
+            list-style-type: disc;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar,
+            .main-content,
+            .faq-question,
+            .faq-question::after {
+                transition: none;
+            }
+        }
+
+        /* Responsive Design */
+        @media (min-width: 1600px) {
+            .faq-container {
+                max-width: 1200px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .faq-container {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-left: var(--sidebar-collapsed-width);
+            }
+            .main-content {
+                padding: 1rem;
+                width: 90vw;
+                max-width: 90vw;
+                margin: 0 auto;
+            }
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+            .sidebar-header img,
+            .menu li span,
+            .footer span {
+                display: none;
+            }
+            .menu li {
+                justify-content: center;
+            }
+            .menu li i {
+                margin: 0;
+            }
+            .faq-container {
+                padding: 1.5rem;
+            }
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-left: 0;
+            }
+            .main-content {
+                width: 100%;
+                max-width: 100%;
+                padding: 0.75rem;
+            }
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .sidebar.expanded {
+                width: var(--sidebar-width);
+            }
+            .toggle-btn {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 101;
+            }
+            .faq-container {
+                padding: 1rem;
+            }
+            .faq-container h1 {
+                font-size: clamp(1.25rem, 4vw, 1.5rem);
+            }
+            .faq-question {
+                font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+            }
+            .faq-answer {
+                font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-content" role="main">
+            <div class="faq-container">
+                <h1>FAQs for General Online Safety</h1>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-1">What is online safety, and why is it important?</button>
+                        <div class="faq-answer" id="faq-answer-1">
+                            <p>Online safety refers to practices that protect your personal information, privacy, and security while using the internet. It’s important to avoid identity theft, cyberbullying, phishing attacks, and other online threats.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-2">How can I create a strong password?</button>
+                        <div class="faq-answer" id="faq-answer-2">
+                            <p>Use a mix of uppercase and lowercase letters, numbers, and special characters. Avoid using easily guessed information like birthdays or names. Passwords should be at least 12 characters long.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-3">What is two-factor authentication (2FA), and should I use it?</button>
+                        <div class="faq-answer" id="faq-answer-3">
+                            <p>2FA is an extra layer of security requiring a second form of verification (like a code sent to your phone) in addition to your password. Yes, you should enable 2FA wherever possible.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-4">How do I recognize a phishing email?</button>
+                        <div class="faq-answer" id="faq-answer-4">
+                            <p>Look for red flags such as:</p>
+                            <ul>
+                                <li>Spelling and grammar mistakes.</li>
+                                <li>Urgent requests to click a link or provide sensitive information.</li>
+                                <li>Suspicious sender email addresses.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-5">How do I protect my devices from malware?</button>
+                        <div class="faq-answer" id="faq-answer-5">
+                            <ul>
+                                <li>Install and update antivirus software.</li>
+                                <li>Avoid downloading files from untrusted sources.</li>
+                                <li>Keep your operating system and apps updated.</li>
+                                <li>Avoid clicking on pop-up ads.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-6">What should I do if I suspect a website is fake?</button>
+                        <div class="faq-answer" id="faq-answer-6">
+                            <ul>
+                                <li>Check the URL for spelling errors or unusual domains.</li>
+                                <li>Look for a padlock icon and "https" in the address bar.</li>
+                                <li>Avoid entering personal information on suspicious websites.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-7">How can I stay safe on social media?</button>
+                        <div class="faq-answer" id="faq-answer-7">
+                            <ul>
+                                <li>Adjust your privacy settings to control who can see your posts.</li>
+                                <li>Avoid sharing personal information like your address or phone number.</li>
+                                <li>Be cautious when accepting friend requests from unknown people.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-8">What is the safest way to shop online?</button>
+                        <div class="faq-answer" id="faq-answer-8">
+                            <ul>
+                                <li>Shop only on reputable websites with secure payment methods.</li>
+                                <li>Look for "https" and a padlock in the browser address bar.</li>
+                                <li>Use a credit card or secure payment service like Escrow or PayPal.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-9">How do I report cyberbullying or online harassment?</button>
+                        <div class="faq-answer" id="faq-answer-9">
+                            <ul>
+                                <li>Take screenshots of the offensive messages.</li>
+                                <li>Report the behavior to the platform where it occurred.</li>
+                                <li>Inform local authorities if the harassment escalates or involves threats.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-10">What should I teach my children about online safety?</button>
+                        <div class="faq-answer" id="faq-answer-10">
+                            <ul>
+                                <li>Never share personal information online.</li>
+                                <li>Avoid interacting with strangers on the internet.</li>
+                                <li>Report anything that makes them uncomfortable to a trusted adult.</li>
+                                <li>Set up parental controls to monitor their online activities.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-11">What should I do if I think my account has been hacked?</button>
+                        <div class="faq-answer" id="faq-answer-11">
+                            <ul>
+                                <li>Change your password immediately.</li>
+                                <li>Enable two-factor authentication.</li>
+                                <li>Check for unusual activity and report the breach to the service provider.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-12">How can I ensure my Wi-Fi network is secure?</button>
+                        <div class="faq-answer" id="faq-answer-12">
+                            <ul>
+                                <li>Use a strong, unique password for your router.</li>
+                                <li>Enable WPA3 or WPA2 encryption.</li>
+                                <li>Regularly update your router's firmware.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-13">Is public Wi-Fi safe to use?</button>
+                        <div class="faq-answer" id="faq-answer-13">
+                            <p>Public Wi-Fi is generally not secure. Avoid accessing sensitive accounts or entering personal information when connected to public networks. Use a Virtual Private Network (VPN) for added security.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-14">How can I recognize online scams?</button>
+                        <div class="faq-answer" id="faq-answer-14">
+                            <ul>
+                                <li>Be cautious of offers that seem too good to be true.</li>
+                                <li>Verify the source before clicking on links or downloading files.</li>
+                                <li>Avoid sharing financial information unless the website is verified and secure.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const body = document.body;
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('expanded');
+            body.classList.toggle('collapsed');
+            toggleIcon.className = sidebar.classList.contains('collapsed') ? 'fas fa-arrow-right' : 'fas fa-bars';
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+
+        // Menu Active State
+        function setActive(element) {
+            document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        document.querySelectorAll('.menu li').forEach(item => {
+            item.addEventListener('click', () => setActive(item));
+        });
+
+        // Responsive Sidebar
+        function handleResponsiveSidebar() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                body.classList.add('collapsed');
+            }
+            if (window.innerWidth <= 480) {
+                sidebar.classList.add('collapsed');
+                sidebar.classList.remove('expanded');
+                body.classList.add('collapsed');
+            }
+        }
+
+        window.addEventListener('load', handleResponsiveSidebar);
+        window.addEventListener('resize', handleResponsiveSidebar);
+
+        // FAQ Toggle with Event Delegation
+        document.querySelector('.faq-container').addEventListener('click', (e) => {
+            const button = e.target.closest('.faq-question');
+            if (!button) return;
+
+            const answer = button.nextElementSibling;
+            const isOpen = button.getAttribute('aria-expanded') === 'true';
+
+            // Close all answers
+            document.querySelectorAll('.faq-question').forEach(btn => {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.nextElementSibling.classList.remove('show');
+            });
+
+            // Toggle current answer
+            if (!isOpen) {
+                button.setAttribute('aria-expanded', 'true');
+                answer.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>

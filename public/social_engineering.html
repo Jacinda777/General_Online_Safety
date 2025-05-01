@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>Phish or Friend?</title>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --info: #17A2B8;
+            --background: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --right-sidebar-width: 280px;
+            --right-sidebar-collapsed-width: 0px;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3B82F6;
+            --sidebar-transition: 0.3s ease;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            width: var(--right-sidebar-width);
+            height: 100vh;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            right: 0;
+            transition: width var(--sidebar-transition), transform var(--sidebar-transition);
+            z-index: 100;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .right-sidebar.collapsed {
+            width: var(--right-sidebar-collapsed-width);
+            transform: translateX(280px);
+        }
+
+        .right-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .mobile-close-btn {
+            display: none;
+            background: var(--error);
+            color: white;
+            padding: 8px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-close-btn:hover {
+            background: #DC2626;
+        }
+
+        .player-stats {
+            background: var(--background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--background);
+            padding-bottom: 0.75rem;
+        }
+
+        #player-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        #player-level {
+            font-size: 0.875rem;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .difficulty {
+            margin-bottom: 1.5rem;
+        }
+
+        .difficulty h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .difficulty select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--background);
+            border: 1px solid var(--text-muted);
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .help-support {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .help-link {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .help-link:hover {
+            color: var(--secondary);
+        }
+
+        .help-link i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content */
+        .game-area {
+            margin-left: var(--sidebar-width);
+            margin-right: var(--right-sidebar-width);
+            width: calc(100% - var(--sidebar-width) - var(--right-sidebar-width));
+            flex-grow: 1;
+            padding: 2rem;
+            transition: all var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed ~ .game-area {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-width));
+        }
+
+        .right-sidebar.collapsed ~ .game-area {
+            margin-right: var(--right-sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-width) - var(--right-sidebar-collapsed-width));
+        }
+
+        .sidebar.collapsed ~ .game-area.right-sidebar.collapsed ~ .game-area {
+            width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-collapsed-width));
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .level {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .scenario-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .scenario-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--background);
+            border-bottom: 1px solid var(--background);
+        }
+
+        #scenario-count {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .hint-btn {
+            display: flex;
+            align-items: center;
+            background: var(--info);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .hint-btn:hover {
+            background: #138496;
+        }
+
+        .hint-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .scenario {
+            padding: 1.5rem;
+            min-height: 200px;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .scenario p {
+            margin-bottom: 1rem;
+        }
+
+        .options {
+            display: flex;
+            padding: 1.5rem;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .options button {
+            flex: 1;
+            max-width: 200px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .options button i {
+            margin-right: 0.5rem;
+        }
+
+        .options button.phishing {
+            background: var(--error);
+            color: white;
+        }
+
+        .options button.phishing:hover {
+            background: #DC2626;
+        }
+
+        .options button.safe {
+            background: var(--success);
+            color: white;
+        }
+
+        .options button.safe:hover {
+            background: #059669;
+        }
+
+        .options button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .next-btn {
+            display: none;
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            margin: 1rem auto;
+            transition: background 0.2s ease;
+        }
+
+        .next-btn:hover {
+            background: var(--secondary);
+        }
+
+        /* Start Game Button */
+        .start-game-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            max-width: 200px;
+            margin: 1rem auto;
+        }
+
+        .start-game-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .start-game-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .start-game-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--text);
+        }
+
+        .feedback-result {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .feedback-result.correct {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .feedback-result.incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .feedback-message {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 300px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .game-area {
+                margin-left: 200px;
+                width: calc(100% - 200px - var(--right-sidebar-width));
+            }
+
+            .sidebar.collapsed ~ .game-area {
+                margin-left: var(--sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-width));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar .menu li span, .sidebar .footer span, .sidebar .logo {
+                display: none;
+                opacity: 0;
+            }
+
+            .sidebar .menu li, .sidebar .footer a {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .game-area {
+                margin-left: var(--sidebar-collapsed-width);
+                margin-right: var(--right-sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-collapsed-width));
+                padding: 1rem;
+            }
+
+            .right-sidebar {
+                transform: translateX(280px);
+                width: var(--right-sidebar-width);
+            }
+
+            .right-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-close-btn {
+                display: flex;
+            }
+
+            .scenario-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .options {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .options button {
+                max-width: 100%;
+            }
+
+            .start-game-btn {
+                max-width: 100%;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <div class="header">
+                <h1>Phish or Friend?</h1>
+            </div>
+
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Welcome, Agent! Ready to detect social engineering traps?</p>
+                            <button class="start-game-btn" id="start-game-btn" aria-label="Start Game">
+                                <i class="fas fa-play"></i> Start Game
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Did You Know (Levels) Page -->
+            <div id="did-you-know" class="page">
+                <div id="level" class="level">
+                    <div class="scenario-card">
+                        <div class="scenario-info">
+                            <div id="scenario-count">Scenario 1/20</div>
+                            <button class="hint-btn" id="hint-btn">
+                                <i class="fas fa-lightbulb"></i> Use Hint
+                            </button>
+                        </div>
+                        <div class="scenario" id="scenario-text">
+                            <p>Loading scenario...</p>
+                        </div>
+                        <div class="options">
+                            <button class="phishing" id="phishing-btn">
+                                <i class="fas fa-exclamation-triangle"></i> Phishing
+                            </button>
+                            <button class="safe" id="safe-btn">
+                                <i class="fas fa-shield-alt"></i> Safe
+                            </button>
+                        </div>
+                        <button class="next-btn" id="next-btn">Next Mission</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Page -->
+            <div id="faq" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Frequently Asked Questions</p>
+                            <ul>
+                                <li><strong>What is phishing?</strong> It’s a scam to steal your info.</li>
+                                <li><strong>How can I spot it?</strong> Look for typos, odd links, and urgent requests.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Page -->
+            <div id="leaderboard" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Leaderboard</p>
+                            <p>Your Rank: Beginner</p>
+                            <p>Score: <span id="score">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chatbot Page -->
+            <div id="chatbot" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Chatbot Assistance</p>
+                            <p>Ask me anything about social engineering!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout Page -->
+            <div id="logout" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>You’ve logged out. See you next mission, Agent!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div id="right-sidebar" class="right-sidebar">
+            <div class="right-sidebar-header">
+                <h3 id="player-name">Player</h3>
+                <button id="mobile-close" class="mobile-close-btn" aria-label="Close right sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="player-stats">
+                <div class="player-info">
+                    <span id="player-name">Player</span>
+                    <span id="player-level">Beginner</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Score</div>
+                        <div id="score-display" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Accuracy</div>
+                        <div id="accuracy-display" class="stat-value">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Level</div>
+                        <div id="level-display" class="stat-value">1</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Hints</div>
+                        <div id="hints-display" class="stat-value">3</div>
+                    </div>
+                </div>
+            </div>
+            <div class="difficulty">
+                <h4>Difficulty Level</h4>
+                <select id="difficulty">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </div>
+            <div class="help-support">
+                <a href="#" class="help-link">
+                    <i class="fas fa-question-circle"></i> Help & Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">×</span>
+            <div id="feedback-result" class="feedback-result"></div>
+            <div id="feedback-message" class="feedback-message"></div>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">×</span>
+            <h2>Hint</h2>
+            <p id="hint-text"></p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let score = 0;
+        let correctAnswers = 0;
+        let totalAnswers = 0;
+        let currentLevel = 1;
+        let hints = 3;
+
+        const scenarios = [
+            { text: 'Email from: <strong>support@paypa1.com</strong><br>"Your account is locked! Click here to verify."', answer: "phishing", hint: "Look for typos in the email!" },
+            { text: '"Hi, this is IT support. We detected a virus—give us your login now!"', answer: "phishing", hint: "Real IT won’t ask for logins." },
+            { text: 'You find a USB labeled "Payroll Updates" in the parking lot.', answer: "phishing", hint: "Unknown USBs are risky!" },
+            { text: 'A friend messages: "I’m stuck abroad—send $500 to this link!"', answer: "phishing", hint: "Verify outside the app!" },
+            { text: 'You get a link to "www.g00gle.com" for a free gift.', answer: "phishing", hint: "Check the URL for fakes!" },
+            { text: 'Text: "Your package is delayed. Click here to reschedule."', answer: "phishing", hint: "Don’t click random text links!" },
+            { text: 'A pop-up says: "Virus detected! Call this number now."', answer: "phishing", hint: "Pop-ups can lie—close them!" },
+            { text: 'Email: "Pay $100 in gift cards to unlock your account."', answer: "phishing", hint: "Gift cards aren’t payment!" },
+            { text: 'Email: "You won a lottery! Click here to claim your prize."', answer: "phishing", hint: "Unexpected winnings are a scam!" },
+            { text: 'A call from "your bank": "We need your PIN to secure your account."', answer: "phishing", hint: "Banks don’t ask for PINs over the phone!" },
+            { text: 'Text: "Your Netflix account is suspended. Update payment details here."', answer: "phishing", hint: "Verify directly with Netflix!" },
+            { text: 'Email from: <strong>amaz0n-support.com</strong><br>"Your order is ready. Confirm your address."', answer: "phishing", hint: "Check for domain typos!" },
+            { text: 'A coworker emails: "I need your password to fix an issue."', answer: "phishing", hint: "Never share your password!" },
+            { text: 'You receive a QR code in an email to "claim a discount."', answer: "phishing", hint: "QR codes can hide malicious links!" },
+            { text: 'A pop-up says: "Your subscription expired. Enter credit card details."', answer: "phishing", hint: "Verify subscriptions directly!" },
+            { text: 'Text: "Your tax refund is ready. Click to process."', answer: "phishing", hint: "Tax agencies don’t send unsolicited links!" },
+            { text: 'Email: "Your account will be deleted unless you verify now."', answer: "phishing", hint: "Urgency is a red flag!" },
+            { text: 'A call claiming to be from Microsoft: "We need remote access to fix your PC."', answer: "phishing", hint: "Microsoft doesn’t call unsolicited!" },
+            { text: 'Email from: <strong>support@facbook.com</strong><br>"Your profile needs verification."', answer: "phishing", hint: "Spot the typo in the domain!" },
+            { text: 'Text: "You’ve been charged $500. Reply YES to confirm."', answer: "phishing", hint: "Don’t reply to suspicious texts!" }
+        ];
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const toggleIcon = document.getElementById("toggle-icon");
+            sidebar.classList.toggle("collapsed");
+            toggleIcon.classList.toggle("fa-bars");
+            toggleIcon.classList.toggle("fa-arrow-right");
+            document.getElementById("toggle-sidebar").setAttribute(
+                "aria-label",
+                sidebar.classList.contains("collapsed") ? "Expand sidebar" : "Collapse sidebar"
+            );
+        }
+
+        function toggleRightSidebar() {
+            const rightSidebar = document.getElementById("right-sidebar");
+            rightSidebar.classList.toggle("collapsed");
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
+            document.querySelector(`.menu a[data-page="${pageId}"]`).parentElement.classList.add('active');
+            if (pageId === 'did-you-know') {
+                loadScenario(currentLevel);
+            }
+            if (pageId === 'logout') {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function loadScenario(level) {
+            const scenarioText = document.getElementById('scenario-text');
+            const scenarioCount = document.getElementById('scenario-count');
+            const nextBtn = document.getElementById('next-btn');
+            const optionsButtons = document.querySelectorAll('.options button');
+            scenarioText.innerHTML = scenarios[level - 1].text;
+            scenarioCount.textContent = `Scenario ${level}/${scenarios.length}`;
+            nextBtn.style.display = 'none';
+            optionsButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.background = btn.classList.contains('phishing') ? 'var(--error)' : 'var(--success)';
+            });
+            updateStats();
+        }
+
+        function updateStats() {
+            const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+            document.getElementById('score').textContent = score;
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('accuracy-display').textContent = `${accuracy}%`;
+            document.getElementById('level-display').textContent = currentLevel;
+            document.getElementById('hints-display').textContent = hints;
+            document.getElementById('player-level').textContent = currentLevel <= 10 ? 'Beginner' : currentLevel <= 15 ? 'Intermediate' : 'Expert';
+        }
+
+        function showFeedback(isCorrect, points) {
+            const feedbackModal = document.getElementById('feedback-modal');
+            const feedbackResult = document.getElementById('feedback-result');
+            const feedbackMessage = document.getElementById('feedback-message');
+            feedbackResult.className = 'feedback-result';
+            feedbackResult.classList.add(isCorrect ? 'correct' : 'incorrect');
+            feedbackResult.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+            feedbackMessage.textContent = isCorrect ? `Great job! +${points} Points` : `Oops, that was ${scenarios[currentLevel - 1].answer}. -5 Points`;
+            feedbackModal.classList.add('active');
+        }
+
+        function showHint() {
+            if (hints <= 0) {
+                showToast('No hints left!');
+                return;
+            }
+            hints--;
+            const hintModal = document.getElementById('hint-modal');
+            const hintText = document.getElementById('hint-text');
+            hintText.textContent = scenarios[currentLevel - 1].hint;
+            hintModal.classList.add('active');
+            updateStats();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function closeModals() {
+            document.getElementById('feedback-modal').classList.remove('active');
+            document.getElementById('hint-modal').classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById("toggle-sidebar");
+            toggleButton.addEventListener("click", toggleSidebar);
+
+            const mobileCloseBtn = document.getElementById("mobile-close");
+            mobileCloseBtn.addEventListener("click", toggleRightSidebar);
+
+            document.getElementById('start-game-btn').addEventListener('click', () => {
+                showPage('did-you-know');
+                showToast('Game Started!');
+            });
+
+            document.getElementById('hint-btn').addEventListener('click', showHint);
+            document.getElementById('phishing-btn').addEventListener('click', () => {
+                const correctAnswer = scenarios[currentLevel - 1].answer;
+                totalAnswers++;
+                if (correctAnswer === 'phishing') {
+                    score += 10;
+                    correctAnswers++;
+                    showFeedback(true, 10);
+                } else {
+                    score -= 5;
+                    showFeedback(false);
+                }
+                updateStats();
+                document.getElementById('next-btn').style.display = 'block';
+                document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+            });
+            document.getElementById('safe-btn').addEventListener('click', () => {
+                const correctAnswer = scenarios[currentLevel - 1].answer;
+                totalAnswers++;
+                if (correctAnswer === 'safe') {
+                    score += 10;
+                    correctAnswers++;
+                    showFeedback(true, 10);
+                } else {
+                    score -= 5;
+                    showFeedback(false);
+                }
+                updateStats();
+                document.getElementById('next-btn').style.display = 'block';
+                document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+            });
+            document.getElementById('next-btn').addEventListener('click', () => {
+                closeModals();
+                currentLevel++;
+                if (currentLevel <= scenarios.length) {
+                    loadScenario(currentLevel);
+                } else {
+                    showToast('All Missions Complete! Starting over.');
+                    currentLevel = 1;
+                    loadScenario(currentLevel);
+                }
+            });
+            document.querySelectorAll('.close-modal').forEach(button => {
+                button.addEventListener('click', closeModals);
+            });
+            window.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('feedback-modal') || e.target === document.getElementById('hint-modal')) {
+                    closeModals();
+                }
+            });
+            document.getElementById('difficulty').addEventListener('change', (e) => {
+                showToast(`Difficulty set to ${e.target.value}!`);
+            });
+
+            loadScenario(currentLevel);
+        });
+    </script>
+</body>
+</html>

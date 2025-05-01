@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>Online Safety Quiz</title>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --accent: #10B981;
+            --background: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --success: #10B981;
+            --error: #EF4444;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3B82F6;
+            --sidebar-transition: 0.3s ease;
+            --border-radius-button: 6px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Question Navigator */
+        .sidebar-right {
+            width: 280px;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            position: fixed;
+            right: 0;
+            height: 100%;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-navigator h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .question-grid button {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            background: var(--background);
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .question-grid button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .question-grid button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: 280px;
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .quiz-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .quiz-box {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-tracker {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--background);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .start-screen, .question-container, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .answers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .answer-choice {
+            padding: 1rem;
+            border: 2px solid var(--background);
+            border-radius: 8px;
+            background: var(--card-bg);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .answer-choice:hover:not(.selected) {
+            border-color: var(--primary);
+            background: #EFF6FF;
+        }
+
+        .answer-choice.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .answer-choice.correct {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .answer-choice.incorrect {
+            background: var(--error);
+            border-color: var(--error);
+            color: white;
+        }
+
+        .feedback-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .feedback-container.bg-green-100 {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .feedback-container.bg-red-100 {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 2rem auto;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: var(--secondary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.5s ease;
+            z-index: 1000;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .main-content {
+                margin-left: 200px;
+                margin-right: 200px;
+            }
+
+            .sidebar.collapsed ~ .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar-right {
+                width: 200px;
+            }
+
+            .question-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar .menu li span, .sidebar .footer span {
+                display: none;
+            }
+
+            .sidebar .logo {
+                opacity: 0;
+                width: 0;
+            }
+
+            .sidebar .menu li, .sidebar .footer a {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+                margin-right: 0;
+            }
+
+            .sidebar-right {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <nav class="sidebar-right">
+            <div class="question-navigator">
+                <h3>Question Navigator</h3>
+                <div id="question-nav" class="question-grid"></div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <h1>Online Safety Quiz</h1>
+                    <p>Test your knowledge about internet security and safe online practices</p>
+                </div>
+                <div class="quiz-box">
+                    <div id="progress-tracker" class="progress-tracker">
+                        <div class="progress-header">
+                            <span>Progress</span>
+                            <span id="score-display">Score: 0/10</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-bar" class="progress-bar"></div>
+                        </div>
+                    </div>
+
+                    <div id="start-screen" class="start-screen">
+                        <h2>Ready to Begin?</h2>
+                        <p>This quiz contains 10 questions about online safety. Take your time and choose the best answer for each question.</p>
+                        <button id="start-button" class="btn primary">Start Quiz</button>
+                    </div>
+
+                    <div id="question-container" class="question-container hidden">
+                        <h3 id="question-text"></h3>
+                        <div id="answers-container" class="answers-container"></div>
+                        <div id="feedback-container" class="feedback-container hidden"></div>
+                        <button id="next-button" class="btn primary hidden">Next Question</button>
+                    </div>
+
+                    <div id="results-screen" class="results-screen hidden">
+                        <h2>Quiz Complete!</h2>
+                        <div class="score-circle">
+                            <span id="final-score">0%</span>
+                        </div>
+                        <p id="result-message"></p>
+                        <button id="retry-button" class="btn primary">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const quizData = [
+            {
+                question: "What is the most secure way to create a password?",
+                answers: [
+                    "Use a combination of letters, numbers, and special characters",
+                    "Use your birth date",
+                    "Use your pet's name",
+                    "Use sequential numbers"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which of these is a sign of a phishing email?",
+                answers: [
+                    "The sender's email matches the company's domain",
+                    "Urgent requests for personal information",
+                    "Professional formatting",
+                    "Clear company branding"
+                ],
+                correct: 1
+            },
+            {
+                question: "What should you do if you receive a suspicious link?",
+                answers: [
+                    "Click it to see what happens",
+                    "Forward it to friends",
+                    "Delete it immediately",
+                    "Save it for later"
+                ],
+                correct: 2
+            },
+            {
+                question: "How often should you update your passwords?",
+                answers: [
+                    "Never",
+                    "Every few years",
+                    "When prompted by a security breach",
+                    "Every 3-6 months"
+                ],
+                correct: 3
+            },
+            {
+                question: "What is two-factor authentication?",
+                answers: [
+                    "Using two different passwords",
+                    "A secondary security measure after password entry",
+                    "Logging in from two devices",
+                    "Having two email addresses"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which is the safest way to store sensitive files?",
+                answers: [
+                    "On your desktop",
+                    "In your email",
+                    "In an encrypted cloud storage",
+                    "On a USB drive"
+                ],
+                correct: 2
+            },
+            {
+                question: "What should you do before downloading software?",
+                answers: [
+                    "Verify the source and read reviews",
+                    "Download immediately if free",
+                    "Ask friends if they use it",
+                    "Check if it has a nice logo"
+                ],
+                correct: 0
+            },
+            {
+                question: "How can you protect against malware?",
+                answers: [
+                    "Only use the computer at night",
+                    "Install multiple antivirus programs",
+                    "Keep software updated and use antivirus",
+                    "Turn off the firewall"
+                ],
+                correct: 2
+            },
+            {
+                question: "What is a secure website protocol?",
+                answers: ["HTTP", "HTTPS", "WWW", "FTP"],
+                correct: 1
+            },
+            {
+                question: "Which practice is best for public Wi-Fi safety?",
+                answers: [
+                    "Share the network with friends",
+                    "Use a VPN connection",
+                    "Do online banking",
+                    "Disable firewall"
+                ],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let quizStarted = false;
+
+        // DOM Elements
+        const startButton = document.getElementById("start-button");
+        const startScreen = document.getElementById("start-screen");
+        const questionContainer = document.getElementById("question-container");
+        const questionText = document.getElementById("question-text");
+        const answersContainer = document.getElementById("answers-container");
+        const nextButton = document.getElementById("next-button");
+        const progressBar = document.getElementById("progress-bar");
+        const scoreDisplay = document.getElementById("score-display");
+        const resultsScreen = document.getElementById("results-screen");
+        const finalScore = document.getElementById("final-score");
+        const resultMessage = document.getElementById("result-message");
+        const retryButton = document.getElementById("retry-button");
+        const questionNav = document.getElementById("question-nav");
+        const feedbackContainer = document.getElementById("feedback-container");
+        const toggleButton = document.getElementById("toggle-sidebar");
+        const toggleIcon = document.getElementById("toggle-icon");
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("collapsed");
+            toggleIcon.classList.toggle("fa-bars");
+            toggleIcon.classList.toggle("fa-arrow-right");
+            toggleButton.setAttribute(
+                "aria-label",
+                sidebar.classList.contains("collapsed") ? "Expand sidebar" : "Collapse sidebar"
+            );
+        }
+
+        function setActive(element) {
+            document.querySelectorAll(".menu li").forEach(li => li.classList.remove("active"));
+            element.classList.add("active");
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+
+        function initializeQuestionNav() {
+            questionNav.innerHTML = "";
+            for (let i = 0; i < quizData.length; i++) {
+                const button = document.createElement("button");
+                button.textContent = `Q${i + 1}`;
+                button.setAttribute("aria-label", `Go to question ${i + 1}`);
+                button.addEventListener("click", () => {
+                    if (quizStarted) {
+                        showQuestion(i);
+                    }
+                });
+                questionNav.appendChild(button);
+            }
+        }
+
+        function updateQuestionNav() {
+            const buttons = questionNav.children;
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.toggle("active", i === currentQuestion);
+            }
+        }
+
+        function showQuestion(index) {
+            currentQuestion = index;
+            questionText.textContent = quizData[currentQuestion].question;
+            answersContainer.innerHTML = "";
+
+            quizData[currentQuestion].answers.forEach((answer, idx) => {
+                const button = document.createElement("button");
+                button.className = "answer-choice";
+                button.textContent = answer;
+                button.setAttribute("aria-label", `Select answer: ${answer}`);
+                button.addEventListener("click", () => selectAnswer(idx));
+                answersContainer.appendChild(button);
+            });
+
+            nextButton.classList.add("hidden");
+            feedbackContainer.classList.add("hidden");
+            updateQuestionNav();
+            updateProgress();
+        }
+
+        function selectAnswer(selectedIndex) {
+            const answers = answersContainer.children;
+            const correctIndex = quizData[currentQuestion].correct;
+
+            for (let answer of answers) {
+                answer.classList.remove("selected", "correct", "incorrect");
+            }
+
+            answers[selectedIndex].classList.add("selected");
+            answers[selectedIndex].classList.add(
+                selectedIndex === correctIndex ? "correct" : "incorrect"
+            );
+            answers[correctIndex].classList.add("correct");
+
+            if (selectedIndex === correctIndex) {
+                score++;
+                feedbackContainer.className = "feedback-container bg-green-100";
+                feedbackContainer.textContent = "Correct! Well done!";
+            } else {
+                feedbackContainer.className = "feedback-container bg-red-100";
+                feedbackContainer.textContent = "Incorrect. The correct answer has been highlighted.";
+            }
+
+            feedbackContainer.classList.remove("hidden");
+            nextButton.classList.remove("hidden");
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            scoreDisplay.textContent = `Score: ${score}/${quizData.length}`;
+        }
+
+        function showResults() {
+            questionContainer.classList.add("hidden");
+            resultsScreen.classList.remove("hidden");
+
+            const percentage = Math.round((score / quizData.length) * 100);
+            finalScore.textContent = `${percentage}%`;
+
+            if (percentage >= 80) {
+                resultMessage.textContent = "Excellent! You're well-versed in online safety!";
+            } else if (percentage >= 60) {
+                resultMessage.textContent = "Good job! But there's room for improvement.";
+            } else {
+                resultMessage.textContent = "You might want to review online safety basics.";
+            }
+
+            if (percentage === 100) {
+                const popup = document.createElement("div");
+                popup.className = "achievement-popup";
+                popup.textContent = "Perfect Score! 🏆";
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 3000);
+            }
+        }
+
+        // Event Listeners
+        startButton.addEventListener("click", () => {
+            quizStarted = true;
+            startScreen.classList.add("hidden");
+            questionContainer.classList.remove("hidden");
+            showQuestion(0);
+        });
+
+        nextButton.addEventListener("click", () => {
+            if (currentQuestion < quizData.length - 1) {
+                showQuestion(currentQuestion + 1);
+            } else {
+                showResults();
+            }
+        });
+
+        retryButton.addEventListener("click", () => {
+            currentQuestion = 0;
+            score = 0;
+            resultsScreen.classList.add("hidden");
+            questionContainer.classList.remove("hidden");
+            showQuestion(0);
+        });
+
+        toggleButton.addEventListener("click", toggleSidebar);
+
+        // Initialize the quiz
+        initializeQuestionNav();
+    </script>
+</body>
+</html>

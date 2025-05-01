@@ -1,0 +1,319 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+    overflow: hidden;
+}
+
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --sidebar-bg: #1e3a8a;
+    --sidebar-hover: #3b82f6;
+    --sidebar-transition: 0.3s ease;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Left Navigation Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--sidebar-bg);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: width var(--sidebar-transition);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    width: 100%;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    max-width: 100%;
+    max-height: 40px;
+    transition: opacity var(--sidebar-transition);
+}
+
+.sidebar.collapsed .logo {
+    opacity: 0;
+    width: 0;
+}
+
+.toggle-btn {
+    background: var(--sidebar-hover);
+    color: white;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: var(--sidebar-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn:hover {
+    background: #304ffe;
+}
+
+.menu {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.menu li {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--sidebar-transition);
+    border-radius: 8px;
+    margin: 8px auto;
+    width: 90%;
+}
+
+.menu li i {
+    font-size: 20px;
+    color: #ccc;
+    transition: var(--sidebar-transition);
+    min-width: 20px;
+}
+
+.menu li a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.menu li span {
+    margin-left: 15px;
+    transition: opacity var(--sidebar-transition);
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .menu li span {
+    opacity: 0;
+    display: none;
+}
+
+.menu li:hover, .menu li.active {
+    background: var(--sidebar-hover);
+    color: white;
+}
+
+.menu li:hover i, .menu li.active i {
+    color: white;
+}
+
+.footer {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--sidebar-transition);
+    border-radius: 8px;
+    margin-top: auto;
+    margin-bottom: 1rem;
+    width: 90%;
+    align-self: center;
+}
+
+.footer a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.footer i {
+    margin-right: 10px;
+    min-width: 20px;
+}
+
+.sidebar.collapsed .footer span {
+    opacity: 0;
+    display: none;
+}
+
+.footer:hover {
+    background: var(--sidebar-hover);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: var(--sidebar-width);
+    margin-right: 250px;
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    transition: margin-left var(--sidebar-transition);
+}
+
+.main-content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+.game-header {
+    background-color: #3b82f6;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.game-area {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.panel {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+/* Right Defense Arsenal */
+.defense-arsenal {
+    width: 250px;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 20px;
+    position: fixed;
+    height: 100%;
+    right: 0;
+    overflow-y: auto;
+}
+
+.defense-arsenal h2 {
+    color: #dbeafe;
+    margin-bottom: 20px;
+}
+
+.defense-arsenal ul {
+    list-style: none;
+}
+
+.defense-arsenal li {
+    margin: 15px 0;
+}
+
+.defense-arsenal button {
+    width: 100%;
+    padding: 10px;
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.defense-arsenal button:hover {
+    background-color: #2563eb;
+    transform: scale(1.05);
+}
+
+.defense-arsenal .disabled {
+    background-color: #6b7280;
+    cursor: not-allowed;
+}
+
+/* Other Styles */
+.network-status {
+    height: 200px;
+    overflow-y: auto;
+}
+
+.log-entry {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.alert {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 5px 0;
+}
+
+.progress {
+    height: 100%;
+    transition: width 0.5s;
+}
+
+.cpu { background-color: #3b82f6; }
+.memory { background-color: #10b981; }
+.shield { background-color: #8b5cf6; }
+
+.threat-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    transition: background-color 0.3s;
+}
+
+.threat-active {
+    background-color: #dc2626;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}

@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <title>SafeGuard</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #f8fafc;
+      --border-radius-button: 8px;
+      --border-radius-default: 12px;
+      --border-radius-full: 9999px;
+      --muted: #4b5563; /* Improved contrast */
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+      --accent: #3b82f6;
+      --sidebar-bg: #1e3a8a;
+      --sidebar-hover: #3b82f6;
+      --sidebar-width: 280px;
+      --sidebar-collapsed-width: 80px;
+      --sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    /* Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      background: #f1f5f9;
+      transition: padding-left var(--sidebar-transition);
+    }
+
+    body.collapsed {
+      padding-left: 0;
+    }
+
+    /* Layout Components */
+    .nav-header {
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      background: var(--card-bg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1rem;
+    }
+
+    .search-container {
+      position: relative;
+      width: 24rem;
+      max-width: 100%;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border-radius: var(--border-radius-button);
+      background-color: var(--secondary);
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-container input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-container i {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .notification {
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .notification:hover {
+      color: var(--primary);
+    }
+
+    .notification i {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .notification span {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 0.5rem;
+      height: 0.5rem;
+      background-color: #ef4444;
+      border-radius: var(--border-radius-full);
+      border: 2px solid var(--card-bg);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .user-info img {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--border-radius-full);
+      border: 2px solid var(--border);
+    }
+
+    .user-info span {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .refresh-profile {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    .refresh-profile:hover {
+      color: #1d4ed8;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: width var(--sidebar-transition);
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar.collapsed .sidebar-header {
+      justify-content: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo {
+      max-height: 36px;
+      width: auto;
+      transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+    }
+
+    .sidebar.collapsed .logo {
+      opacity: 0;
+      width: 0;
+    }
+
+    .toggle-btn {
+      background: var(--sidebar-hover);
+      color: white;
+      padding: 8px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      background: #60a5fa;
+    }
+
+    .menu {
+      flex-grow: 1;
+      list-style: none;
+      padding: 1rem;
+    }
+
+    .menu li {
+      margin: 0.5rem 0;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-radius: var(--border-radius);
+      transition: background-color 0.2s ease;
+      position: relative;
+    }
+
+    .sidebar.collapsed .menu li {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    .menu li i {
+      font-size: 1.2rem;
+      color: #e2e8f0;
+      width: 24px;
+      text-align: center;
+    }
+
+    .menu li a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      font-size: 0.95rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .sidebar.collapsed .menu li a {
+      justify-content: center;
+    }
+
+    .menu li span {
+      margin-left: 0.75rem;
+      white-space: nowrap;
+      transition: opacity var(--sidebar-transition);
+    }
+
+    .sidebar.collapsed .menu li span {
+      opacity: 0;
+      display: none;
+    }
+
+    .menu li:hover,
+    .menu li.active {
+      background: var(--sidebar-hover);
+    }
+
+    .menu li:hover i,
+    .menu li.active i {
+      color: white;
+    }
+
+    .sidebar.collapsed .menu li a:hover::after,
+    .sidebar.collapsed .menu li a:focus::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: calc(var(--sidebar-collapsed-width) + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--card-bg);
+      color: var(--text);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--primary);
+      font-size: 0.875rem;
+      white-space: nowrap;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer {
+      padding: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar.collapsed .footer a {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    .footer i {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .footer span {
+      margin-left: 0.75rem;
+      font-weight: 500;
+    }
+
+    .sidebar.collapsed .footer span {
+      opacity: 0;
+      display: none;
+    }
+
+    .footer a:hover {
+      background: var(--sidebar-hover);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 1.5rem;
+      margin-left: var(--sidebar-width);
+      margin-right: 20vw;
+      width: calc(100% - var(--sidebar-width) - 20vw);
+      transition: all var(--sidebar-transition);
+    }
+
+    body.collapsed .main-content {
+      margin-left: var(--sidebar-collapsed-width);
+      width: calc(100% - var(--sidebar-collapsed-width) - 20vw);
+    }
+
+    .dashboard {
+      color: white;
+      border-radius: var(--border-radius-default);
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      box-shadow: var(--shadow-md);
+    }
+
+    .dashboard h1 {
+      margin: 0 0 1rem;
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+
+    .dashboard-button {
+      padding: 0.75rem 1.5rem;
+      background: white;
+      color: var(--primary);
+      border: none;
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+
+    .dashboard-button:hover {
+      background: #f1f5f9;
+    }
+
+    /* Carousel */
+    .carousel-section {
+      margin-bottom: 2rem;
+    }
+
+    .carousel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .title-section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-buttons button {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--border-radius-full);
+      background-color: var(--secondary);
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-buttons button:hover {
+      background-color: #e2e8f0;
+    }
+
+    .nav-buttons button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .games-container,
+    .card-container {
+      overflow-x: auto;
+      display: flex;
+      gap: 1rem;
+      padding-bottom: 0.5rem;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+    }
+
+    .games-container::-webkit-scrollbar,
+    .card-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .games-container::-webkit-scrollbar-thumb,
+    .card-container::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    .game-card,
+    .card-tip {
+      flex: 0 0 18rem;
+      background: var(--card-bg);
+      border-radius: var(--border-radius-default);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .game-card:hover,
+    .card-tip:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .game-card .image-container,
+    .card-tip .image-container {
+      position: relative;
+      padding-top: 56.25%;
+      background-color: var(--secondary);
+    }
+
+    .game-card .image-container img,
+    .card-tip .image-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s ease;
+    }
+
+    .game-card:hover .image-container img,
+    .card-tip:hover .image-container img {
+      transform: scale(1.03);
+    }
+
+    .game-card h3,
+    .card-tip h3 {
+      font-weight: 600;
+      margin: 0.75rem;
+      font-size: 1rem;
+      color: #1e293b;
+    }
+
+    .game-card .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0 0.75rem 0.75rem;
+    }
+
+    .game-card .meta span {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--border-radius-full);
+      font-weight: 500;
+    }
+
+    .game-card .meta .beginner {
+      background-color: #dcfce7;
+      color: #16a34a;
+    }
+
+    .game-card .meta .intermediate {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .game-card .meta .advanced {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+
+    .game-card .meta .time {
+      color: var(--muted);
+    }
+
+    .game-card button,
+    .card-tip button {
+      width: calc(100% - 1.5rem);
+      margin: 0 0.75rem 0.75rem;
+      padding: 0.75rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+
+    .game-card button:hover,
+    .card-tip button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .explore-button {
+      padding: 0.75rem 1.5rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+      margin: 1rem auto;
+      display: block;
+    }
+
+    .explore-button:hover {
+      background: #1d4ed8;
+    }
+
+    /* Popup */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .popup-content {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--border-radius-default);
+      width: 90%;
+      max-width: 500px;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+      transform: scale(0.9);
+      transition: transform 0.2s ease;
+    }
+
+    .popup.active .popup-content {
+      transform: scale(1);
+    }
+
+    .close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--muted);
+    }
+
+    .close:hover {
+      color: #ef4444;
+    }
+
+    /* Extras */
+    .extras {
+      display: flex;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .chatbot,
+    .faq {
+      text-align: center;
+      flex: 1;
+      background: var(--card-bg);
+      padding: 1rem;
+      border-radius: var(--border-radius-default);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease;
+    }
+
+    .chatbot:hover,
+    .faq:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .chatbot img,
+    .faq img {
+      max-width: 50%;
+      margin-bottom: 0.75rem;
+      border-radius: var(--border-radius-default);
+    }
+
+    .chatbot p,
+    .faq p {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* Right Sidebar */
+    .right-sidebar {
+      width: 20vw;
+      background-color: var(--secondary);
+      padding: 1.5rem;
+      overflow-y: auto;
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      z-index: 50;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .right-sidebar h3 {
+      font-size: 1.1rem;
+      color: #1e293b;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .daily-challenges,
+    .notifications,
+    .progress,
+    .achievements,
+    .top-players {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-default);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease;
+    }
+
+    .daily-challenges:hover,
+    .notifications:hover,
+    .progress:hover,
+    .achievements:hover,
+    .top-players:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .challenge-item {
+      display: flex;
+      align-items: center;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .challenge-item:hover {
+      background-color: var(--secondary);
+    }
+
+    .challenge-checkbox {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .notification-item {
+      padding: 0.75rem;
+      border-left: 3px solid var(--primary);
+      margin: 0.5rem 0;
+      background: var(--secondary);
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .notification-item:hover {
+      background: #e2e8f0;
+    }
+
+    .notification-time {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .progress-bar {
+      background: var(--secondary);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 8px;
+      margin: 0.5rem 0;
+    }
+
+    .progress-bar div {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.5s ease;
+    }
+
+    .progress li {
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .achievement-badges {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .badge {
+      background: var(--secondary);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .badge:hover {
+      transform: scale(1.1);
+    }
+
+    .badge i {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .badge.locked {
+      background: #e2e8f0;
+      opacity: 0.7;
+    }
+
+    .badge.locked i {
+      color: var(--muted);
+    }
+
+    .player-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: var(--border-radius-button);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .player-item:hover {
+      background-color: var(--secondary);
+    }
+
+    .player-rank {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .player-name {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .player-score {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      max-width: 300px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-success { background: #10B981; }
+    .toast-error { background: #EF4444; }
+    .toast-warning { background: #F59E0B; }
+    .toast-info { background: #17A2B8; }
+
+    /* Login Modal */
+    .login-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-modal-content h3 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .login-modal-content .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .login-modal-content .form-group label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .login-modal-content .form-group input {
+      padding: 0.75rem;
+      border: 1px solid #e0e0e0;
+      border-radius: var(--border-radius-button);
+      font-size: 1rem;
+      color: #1e293b;
+      width: 100%;
+    }
+
+    .login-modal-content .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .login-modal-content button {
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius-button);
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      color: white;
+      cursor: pointer;
+      background: var(--primary);
+    }
+
+    .login-modal-content button:hover {
+      background: #1d4ed8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .right-sidebar {
+        width: 25vw;
+      }
+
+      .main-content {
+        margin-right: 25vw;
+        width: calc(100% - var(--sidebar-width) - 25vw);
+      }
+
+      body.collapsed .main-content {
+        width: calc(100% - var(--sidebar-collapsed-width) - 25vw);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .right-sidebar {
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .right-sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+        margin-right: 0;
+        width: calc(100% - var(--sidebar-collapsed-width));
+        padding: 1rem;
+      }
+
+      .sidebar {
+        width: var(--sidebar-collapsed-width);
+      }
+
+      .sidebar-header img,
+      .menu li span,
+      .footer span {
+        display: none;
+      }
+
+      .menu li {
+        justify-content: center;
+      }
+
+      .menu li i {
+        margin: 0;
+      }
+
+      .game-card,
+      .card-tip {
+        flex: 0 0 16rem;
+      }
+
+      .extras {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 0.5rem;
+      }
+
+      .game-card,
+      .card-tip {
+        flex: 0 0 14rem;
+      }
+
+      .dashboard h1 {
+        font-size: 1.5rem;
+      }
+
+      .dashboard-button {
+        padding: 0.5rem 1rem;
+      }
+
+      .search-container {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Sidebar -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+      </div>
+      <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+        <i class="fas fa-bars" id="toggle-icon"></i>
+      </button>
+    </div>
+    <ul class="menu">
+      <li class="active">
+        <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li>
+        <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+          <i class="fas fa-newspaper"></i>
+          <span>Security News</span>
+        </a>
+      </li>
+      <li>
+        <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+          <i class="fas fa-question-circle"></i>
+          <span>Did You Know</span>
+        </a>
+      </li>
+      <li>
+        <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+          <i class="fas fa-clipboard-list"></i>
+          <span>FAQ</span>
+        </a>
+      </li>
+      <li>
+        <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+          <i class="fas fa-trophy"></i>
+          <span>Leaderboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+          <i class="fas fa-robot"></i>
+          <span>Chatbot</span>
+        </a>
+      </li>
+    </ul>
+    <div class="footer">
+      <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <!-- Nav Section -->
+    <header class="nav-header">
+      <div class="search-container">
+        <input type="text" placeholder="Search..." aria-label="Search">
+        <i class="fas fa-search" aria-hidden="true"></i>
+      </div>
+      <div class="user-section">
+        <button class="notification" aria-label="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span aria-hidden="true"></span>
+        </button>
+        <div class="user-info" aria-label="User profile">
+          <a href="profile.html"><img id="user-avatar" src="https://public.readdy.ai/ai/img_res/3da8be8e231540ca46382d59683db095.jpg" alt="User profile picture"></a>
+          <span id="user-name">John Anderson</span>
+          <button class="refresh-profile" onclick="refreshProfile()" aria-label="Refresh profile">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard" aria-labelledby="dashboard-title">
+      <h1 id="dashboard-title">Security News</h1>
+      <a href="news.html"><button class="dashboard-button">Take Action</button></a>
+    </section>
+
+    <!-- Security Games Carousel -->
+    <section class="security-games carousel-section" aria-labelledby="games-title">
+      <div class="carousel-header">
+        <div class="title-section">
+          <h2 id="games-title">Security Games</h2>
+        </div>
+        <div class="nav-buttons">
+          <button class="prev-btn" aria-label="Previous game"><i class="fas fa-chevron-left"></i></button>
+          <button class="next-btn" aria-label="Next game"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="games-container" role="region" aria-label="Security games carousel">
+        <div class="game-card">
+          <div class="image-container">
+            <img src="images/quiz.jpg" alt="Security Trivia Time game" loading="lazy">
+          </div>
+          <h3>Security Trivia Time</h3>
+          <div class="meta">
+            <span class="beginner">Beginner</span>
+            <span class="time">8 min</span>
+          </div>
+          <a href="quiz.html"><button>Play Now</button></a>
+        </div>
+        <div class="game-card">
+          <div class="image-container">
+            <img src="images/password.jpg" alt="Password Security Challenge game" loading="lazy">
+          </div>
+          <h3>Password Security Challenge</h3>
+          <div class="meta">
+            <span class="beginner">Beginner</span>
+            <span class="time">5 min</span>
+          </div>
+          <a href="password.html"><button>Play Now</button></a>
+        </div>
+        <div class="game-card">
+          <div class="image-container">
+            <img src="https://public.readdy.ai/ai/img_res/2bd3806237f69fbb7f4b8375ea0ee8d3.jpg" alt="Phishing Detection Game" loading="lazy">
+          </div>
+          <h3>Phishing Detection Game</h3>
+          <div class="meta">
+            <span class="intermediate">Intermediate</span>
+            <span class="time">10 min</span>
+          </div>
+          <a href="phishing.html"><button>Play Now</button></a>
+        </div>
+        <div class="game-card">
+          <div class="image-container">
+            <img src="https://public.readdy.ai/ai/img_res/ecc386dc95e78cfe1af21e871b39c66d.jpg" alt="Network Defense Simulator game" loading="lazy">
+          </div>
+          <h3>Network Defense Simulator</h3>
+          <div class="meta">
+            <span class="advanced">Advanced</span>
+            <span class="time">15 min</span>
+          </div>
+          <a href="network_defense.html"><button>Play Now</button></a>
+        </div>
+        <div class="game-card">
+          <div class="image-container">
+            <img src="https://public.readdy.ai/ai/img_res/2b2bc669898e6253327ef9a028518a27.jpg" alt="Social Engineering Awareness game" loading="lazy">
+          </div>
+          <h3>Social Engineering Awareness</h3>
+          <div class="meta">
+            <span class="beginner">Beginner</span>
+            <span class="time">10 min</span>
+          </div>
+          <a href="social_engineering.html"><button>Play Now</button></a>
+        </div>
+        <div class="game-card">
+          <div class="image-container">
+            <img src="images/spam.jpg" alt="Spot the Spam game" loading="lazy">
+          </div>
+          <h3>Spot The Spam</h3>
+          <div class="meta">
+            <span class="beginner">Beginner</span>
+            <span class="time">10 min</span>
+          </div>
+          <a href="spam.html"><button>Play Now</button></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security Tips Carousel -->
+    <section class="security-tips carousel-section" aria-labelledby="tips-title">
+      <div class="carousel-header">
+        <div class="title-section">
+          <h2 id="tips-title">Security Tips</h2>
+        </div>
+        <button class="explore-button" onclick="location.href='tips.html';">Explore More</button>
+        <div class="nav-buttons">
+          <button class="prev-btn" aria-label="Previous tip"><i class="fas fa-chevron-left"></i></button>
+          <button class="next-btn" aria-label="Next tip"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="card-container" role="region" aria-label="Security tips carousel">
+        <div class="card-tip" data-topic="network-security">
+          <div class="image-container">
+            <img src="images/Network Security.jpeg" alt="Network Security tip" loading="lazy">
+          </div>
+          <h3>Network Security</h3>
+          <button class="read-more-btn">Read More</button>
+        </div>
+        <div class="card-tip" data-topic="social-engineering">
+          <div class="image-container">
+            <img src="images/Social.jpeg" alt="Social Engineering tip" loading="lazy">
+          </div>
+          <h3>Social Engineering</h3>
+          <button class="read-more-btn">Read More</button>
+        </div>
+        <div class="card-tip" data-topic="data-protection">
+          <div class="image-container">
+            <img src="images/data.jpeg" alt="Data Protection tip" loading="lazy">
+          </div>
+          <h3>Data Protection</h3>
+          <button class="read-more-btn">Read More</button>
+        </div>
+        <div class="card-tip" data-topic="password-security">
+          <div class="image-container">
+            <img src="images/password.jpg" alt="Password Security tip" loading="lazy">
+          </div>
+          <h3>Password Security</h3>
+          <button class="read-more-btn">Read More</button>
+        </div>
+        <div class="card-tip" data-topic="malware">
+          <div class="image-container">
+            <img src="images/malware.jpeg" alt="Malware tip" loading="lazy">
+          </div>
+          <h3>Malware</h3>
+          <button class="read-more-btn">Read More</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chatbot and FAQ Section -->
+    <section class="extras">
+      <div class="chatbot">
+        <a href="chatbot.html" aria-label="Chat with SafeGuard">
+          <img src="images/bot.jpg" alt="SafeGuard Chatbot" loading="lazy">
+          <p>Chat with SafeGuard</p>
+        </a>
+      </div>
+      <div class="faq">
+        <a href="faq.html" aria-label="Frequently Asked Questions">
+          <img src="images/faq.jpg" alt="FAQ Section" loading="lazy">
+          <p>FAQ</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Popup -->
+    <div id="popup" class="popup" role="dialog" aria-labelledby="popup-title">
+      <div class="popup-content">
+        <button id="popup-close" class="close" aria-label="Close popup">×</button>
+        <h2 id="popup-title"></h2>
+        <p id="popup-text"></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Sidebar -->
+  <aside class="right-sidebar" id="right-sidebar" role="complementary">
+    <button id="toggle-right-sidebar" class="toggle-btn" aria-label="Toggle right sidebar" style="display: none;">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="daily-challenges">
+      <h3>Daily Challenges</h3>
+      <div class="challenge-item">
+        <input type="checkbox" class="challenge-checkbox" id="challenge1" aria-label="Complete password strength test">
+        <label for="challenge1">Complete password strength test</label>
+      </div>
+      <div class="challenge-item">
+        <input type="checkbox" class="challenge-checkbox" id="challenge2" aria-label="Identify 3 phishing emails">
+        <label for="challenge2">Identify 3 phishing emails</label>
+      </div>
+      <div class="challenge-item">
+        <input type="checkbox" class="challenge-checkbox" id="challenge3" aria-label="Setup 2FA authentication">
+        <label for="challenge3">Setup 2FA authentication</label>
+      </div>
+    </div>
+    <div class="progress">
+      <h3>Your Progress</h3>
+      <ul>
+        <li>
+          <span>Cybersecurity Basics</span>
+          <div class="progress-bar">
+            <div style="width: 75%;"></div>
+          </div>
+        </li>
+        <li>
+          <span>Password Security</span>
+          <div class="progress-bar">
+            <div style="width: 60%;"></div>
+          </div>
+        </li>
+        <li>
+          <span>Phishing Prevention</span>
+          <div class="progress-bar">
+            <div style="width: 45%;"></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="achievements">
+      <h3>Achievements</h3>
+      <div class="achievement-badges">
+        <div class="badge" title="Security Expert" aria-label="Security Expert badge">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="badge" title="Quick Learner" aria-label="Quick Learner badge">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="badge locked" title="Master Detective" aria-label="Master Detective badge (locked)">
+          <i class="fas fa-search"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Login Modal -->
+  <div class="login-modal" id="login-modal">
+    <div class="login-modal-content">
+      <h3>Login</h3>
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required aria-label="Email address">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required aria-label="Password">
+      </div>
+      <button id="login-btn" aria-label="Login">Login</button>
+    </div>
+  </div>
+
+  <script>
+    // Base URL for the backend API
+    const API_BASE_URL = 'http://localhost:3000/api/profile';
+
+    // Toast Notification
+    function showToast(message, type = 'info', duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast toast-${type}`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // Data Fetcher
+    window.DataFetcher = {
+      async fetchProfile() {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) throw new Error('No token found');
+
+          const response = await fetch(`${API_BASE_URL}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            if (errorData.message === 'User not found') {
+              localStorage.removeItem('token');
+              throw new Error('User not found. Please login again.');
+            }
+            throw new Error(errorData.message || 'Failed to fetch profile');
+          }
+          const data = await response.json();
+          console.log('Profile fetched successfully:', data); // Debug log
+          return data;
+        } catch (error) {
+          console.error('Failed to fetch profile:', error.message); // Debug log
+          showToast(error.message === 'No token found' || error.message === 'User not found. Please login again.' ? 'Please login to continue' : 'Failed to load profile.', 'error');
+          if (error.message === 'No token found' || error.message === 'User not found. Please login again.') {
+            showLoginModal();
+          }
+          return null;
+        }
+      },
+      async login(email, password) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Login failed');
+          }
+          const data = await response.json();
+          localStorage.setItem('token', data.token);
+          return data;
+        } catch (error) {
+          console.error('Login failed:', error);
+          showToast(error.message, 'error');
+          throw error;
+        }
+      }
+    };
+
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const body = document.body;
+    const rightSidebar = document.getElementById('right-sidebar');
+    const toggleRightSidebar = document.getElementById('toggle-right-sidebar');
+
+    function toggleSidebar() {
+      if (window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed');
+        body.classList.toggle('collapsed');
+        toggleIcon.className = sidebar.classList.contains('collapsed') ? 'fas fa-arrow-right' : 'fas fa-bars';
+      }
+    }
+
+    function toggleRightSidebarMobile() {
+      rightSidebar.classList.toggle('active');
+      toggleRightSidebar.style.display = rightSidebar.classList.contains('active') ? 'block' : 'none';
+    }
+
+    toggleBtn.addEventListener('click', toggleSidebar);
+    toggleRightSidebar.addEventListener('click', toggleRightSidebarMobile);
+
+    // Menu Active State
+    function setActive(element) {
+      document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    document.querySelectorAll('.menu li').forEach(item => {
+      item.addEventListener('click', () => setActive(item));
+    });
+
+    // Responsive Sidebar
+    function handleResponsiveSidebar() {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.add('collapsed');
+        body.classList.add('collapsed');
+        toggleRightSidebar.style.display = 'block';
+        rightSidebar.classList.remove('active');
+      } else {
+        sidebar.classList.remove('collapsed');
+        body.classList.remove('collapsed');
+        toggleRightSidebar.style.display = 'none';
+        rightSidebar.classList.add('active');
+      }
+    }
+
+    window.addEventListener('load', handleResponsiveSidebar);
+    window.addEventListener('resize', handleResponsiveSidebar);
+
+    // Carousel Navigation
+    function initCarousel(containerSelector, prevBtnSelector, nextBtnSelector) {
+      const container = document.querySelector(containerSelector);
+      const prevBtn = document.querySelector(prevBtnSelector);
+      const nextBtn = document.querySelector(nextBtnSelector);
+      const cardWidth = container.querySelector('.game-card, .card-tip').offsetWidth + 16; // Card width + gap
+
+      function updateButtons() {
+        prevBtn.disabled = container.scrollLeft <= 0;
+        nextBtn.disabled = container.scrollLeft + container.offsetWidth >= container.scrollWidth;
+      }
+
+      prevBtn.addEventListener('click', () => {
+        container.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+        setTimeout(updateButtons, 300);
+      });
+
+      nextBtn.addEventListener('click', () => {
+        container.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        setTimeout(updateButtons, 300);
+      });
+
+      container.addEventListener('scroll', updateButtons);
+      updateButtons();
+    }
+
+    initCarousel('.games-container', '.security-games .prev-btn', '.security-games .next-btn');
+    initCarousel('.card-container', '.security-tips .prev-btn', '.security-tips .next-btn');
+
+    // Popup
+    const popup = document.getElementById('popup');
+    const popupTitle = document.getElementById('popup-title');
+    const popupText = document.getElementById('popup-text');
+    const closeBtn = document.getElementById('popup-close');
+
+    const content = {
+      'network-security': {
+        title: 'Network Security',
+        text: 'Network security involves protecting the integrity, confidentiality, and availability of data as it travels across or resides within a network.'
+      },
+      'social-engineering': {
+        title: 'Social Engineering',
+        text: 'Social engineering exploits human psychology to trick individuals into revealing sensitive information.'
+      },
+      'data-protection': {
+        title: 'Data Protection',
+        text: 'Data protection safeguards sensitive information from unauthorized access, loss, or corruption.'
+      },
+      'password-security': {
+        title: 'Password Security',
+        text: 'Password security ensures credentials are strong and protected with best practices like MFA.'
+      },
+      'malware': {
+        title: 'Malware',
+        text: 'Malware includes viruses, ransomware, and trojans designed to harm systems or steal data.'
+      }
+    };
+
+    document.querySelectorAll('.read-more-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.card-tip');
+        const topic = card.getAttribute('data-topic');
+        const data = content[topic] || { title: 'Error', text: 'Content not available.' };
+        popupTitle.textContent = data.title;
+        popupText.textContent = data.text;
+        popup.style.display = 'flex';
+        popup.classList.add('active');
+        popup.focus();
+      });
+    });
+
+    function closePopup() {
+      popup.style.display = 'none';
+      popup.classList.remove('active');
+    }
+
+    closeBtn.addEventListener('click', closePopup);
+    popup.addEventListener('click', e => {
+      if (e.target === popup) closePopup();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && popup.style.display === 'flex') closePopup();
+    });
+
+    // Interactive Elements
+    document.querySelectorAll('.challenge-item').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.tagName !== 'INPUT') {
+          const checkbox = item.querySelector('input[type="checkbox"]');
+          checkbox.checked = !checkbox.checked;
+          item.style.backgroundColor = checkbox.checked ? '#e6f3ff' : '';
+        }
+      });
+    });
+
+    document.querySelectorAll('.badge:not(.locked)').forEach(badge => {
+      badge.addEventListener('click', () => {
+        badge.style.transform = 'scale(1.1)';
+        setTimeout(() => badge.style.transform = 'scale(1)', 200);
+      });
+    });
+
+    // Profile Management
+    async function loadProfile() {
+      const profile = await window.DataFetcher.fetchProfile();
+      if (profile) {
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        userAvatar.src = profile.avatar || 'https://public.readdy.ai/ai/img_res/3da8be8e231540ca46382d59683db095.jpg'; // Fallback avatar
+        userAvatar.alt = `Profile picture for ${profile.name}`;
+        userName.textContent = profile.name || 'User';
+      } else {
+        // If profile fetch fails, the login modal is shown via DataFetcher
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        userAvatar.src = 'https://public.readdy.ai/ai/img_res/3da8be8e231540ca46382d59683db095.jpg'; // Fallback avatar
+        userAvatar.alt = 'Default profile picture';
+        userName.textContent = 'Guest';
+      }
+    }
+
+    async function refreshProfile() {
+      showToast('Refreshing profile...', 'info');
+      await loadProfile();
+      showToast('Profile refreshed', 'success');
+    }
+
+    // Login Modal
+    function showLoginModal() {
+      document.getElementById('login-modal').style.display = 'flex';
+    }
+
+    function setupEventListeners() {
+      // Login Button
+      document.getElementById('login-btn').addEventListener('click', async () => {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        if (!email || !password) {
+          showToast('Please enter email and password', 'error');
+          return;
+        }
+
+        try {
+          await window.DataFetcher.login(email, password);
+          document.getElementById('login-modal').style.display = 'none';
+          showToast('Login successful', 'success');
+          loadProfile();
+        } catch (error) {
+          // Error is handled in DataFetcher.login
+        }
+      });
+    }
+
+    // Logout Function
+    function logout() {
+      localStorage.removeItem('token');
+      showToast('Logged out successfully', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 2000);
+    }
+
+    // Main Application Logic
+    (function() {
+      async function initializeApp() {
+        try {
+          handleResponsiveSidebar();
+          if (!localStorage.getItem('token')) {
+            showLoginModal();
+          } else {
+            loadProfile();
+          }
+          setupEventListeners();
+        } catch (error) {
+          console.error('App initialization failed:', error);
+          showToast('Failed to initialize dashboard', 'error');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    })();
+
+    // Page Navigation
+    function showPage(pageId) {
+      if (pageId === 'logout') {
+        logout();
+      } else {
+        window.location.href = `${pageId}.html`;
+      }
+    }
+
+    function showLeaderboard() {
+      window.location.href = 'leaderboard.html';
+    }
+  </script>
+</body>
+</html>

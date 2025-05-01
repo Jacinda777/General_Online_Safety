@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>Gametime Leaderboard - SafeGuard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #f8fafc;
+            --border-radius-button: 8px;
+            --border-radius-default: 12px;
+            --border-radius-full: 9999px;
+            --muted: #4b5563;
+            --border: #e2e8f0;
+            --card-bg: #ffffff;
+            --accent: #3b82f6;
+            --sidebar-bg: #1e3a8a;
+            --sidebar-hover: #3b82f6;
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 10vw;
+            --sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --gold: #FFD43B;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background: #f1f5f9;
+            padding-left: var(--sidebar-width);
+            transition: padding-left var(--sidebar-transition);
+        }
+
+        body.collapsed {
+            padding-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+        .sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            width: 90vw;
+            max-width: 90vw;
+            margin: 0 auto;
+            transition: padding var(--sidebar-transition);
+        }
+
+        /* Leaderboard Container */
+        .leaderboard-container {
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            border-radius: var(--border-radius-default);
+            box-shadow: var(--shadow-sm);
+            padding: 2.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .leaderboard-container h1 {
+            font-size: clamp(1.75rem, 4vw, 2rem);
+            font-weight: 600;
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .leaderboard-container p {
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Podium */
+        .podium {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            justify-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .podium-item {
+            text-align: center;
+        }
+
+        .crown {
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .avatar {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            margin: 0 auto 0.5rem;
+        }
+
+        .avatar.first {
+            width: 5rem;
+            height: 5rem;
+            border-color: var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .podium-item span {
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        /* Search */
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 3rem;
+            border-radius: var(--border-radius-full);
+            padding: 0 1rem 0 3rem;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-default);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: var(--border-radius-button);
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .player-item:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .player-avatar {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 1rem;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .player-rank {
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            color: var(--muted);
+        }
+
+        .player-score {
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-default);
+            padding: 1.5rem;
+            max-width: 24rem;
+            width: 100%;
+            margin: 0 1rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-title {
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-text {
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        .modal-button {
+            width: 100%;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius-button);
+            padding: 0.75rem;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-button:hover {
+            background: #1e40af;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar,
+            .main-content,
+            .player-item,
+            .modal-button {
+                transition: none;
+            }
+        }
+
+        /* Responsive Design */
+        @media (min-width: 1600px) {
+            .leaderboard-container {
+                max-width: 1200px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .podium {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .leaderboard-container {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-left: var(--sidebar-collapsed-width);
+            }
+            .main-content {
+                padding: 1rem;
+                width: 90vw;
+                max-width: 90vw;
+                margin: 0 auto;
+            }
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+            .sidebar-header img,
+            .menu li span,
+            .footer span {
+                display: none;
+            }
+            .menu li {
+                justify-content: center;
+            }
+            .menu li i {
+                margin: 0;
+            }
+            .leaderboard-container {
+                padding: 1.5rem;
+            }
+            .podium {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-left: 0;
+            }
+            .main-content {
+                width: 100%;
+                max-width: 100%;
+                padding: 0.75rem;
+            }
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .sidebar.expanded {
+                width: var(--sidebar-width);
+            }
+            .toggle-btn {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 101;
+            }
+            .leaderboard-container {
+                padding: 1rem;
+            }
+            .leaderboard-container h1 {
+                font-size: clamp(1.25rem, 4vw, 1.5rem);
+            }
+            .leaderboard-container p {
+                font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+            }
+            .avatar {
+                width: 3.5rem;
+                height: 3.5rem;
+            }
+            .avatar.first {
+                width: 4.5rem;
+                height: 4.5rem;
+            }
+            .player-avatar {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li>
+                    <a href="chatbot_dashboard.html" aria-label="Home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" aria-label="Did You Know">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" aria-label="FAQ">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="leaderboard.html" aria-label="Leaderboard">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" aria-label="Chatbot">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-content" role="main">
+            <div class="leaderboard-container">
+                <h1>Gametime Leaderboard</h1>
+                <p>Top players in the SafeGuard challenge</p>
+                <div class="podium">
+                    <div class="podium-item">
+                        <div class="avatar">
+                            <img src="images/profile1.jpg" alt="2nd Place">
+                        </div>
+                        <span>2nd</span>
+                    </div>
+                    <div class="podium-item">
+                        <i class="fa-solid fa-crown crown"></i>
+                        <div class="avatar first">
+                            <img src="images/profile2.jpg" alt="1st Place">
+                        </div>
+                        <span>1st</span>
+                    </div>
+                    <div class="podium-item">
+                        <div class="avatar">
+                            <img src="images/profile3.jpg" alt="3rd Place">
+                        </div>
+                        <span>3rd</span>
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" placeholder="Search Users" class="search-input" aria-label="Search leaderboard">
+                    <i class="fas fa-magnifying-glass search-icon"></i>
+                </div>
+                <div class="leaderboard">
+                    <div class="player-item" tabindex="0">
+                        <div class="player-avatar">
+                            <img src="images/profile4.jpg" alt="Cameron Black">
+                        </div>
+                        <div class="player-info">
+                            <h3 class="player-name">Cameron Black</h3>
+                            <p class="player-rank">Diamond Player</p>
+                        </div>
+                        <div class="player-score">122,585</div>
+                    </div>
+                    <div class="player-item" tabindex="0">
+                        <div class="player-avatar">
+                            <img src="images/profile5.jpg" alt="Gladys Fisher">
+                        </div>
+                        <div class="player-info">
+                            <h3 class="player-name">Gladys Fisher</h3>
+                            <p class="player-rank">Diamond Player</p>
+                        </div>
+                        <div class="player-score">122,583</div>
+                    </div>
+                    <div class="player-item" tabindex="0">
+                        <div class="player-avatar">
+                            <img src="images/profile6.jpg" alt="Jennie Warren">
+                        </div>
+                        <div class="player-info">
+                            <h3 class="player-name">Jennie Warren</h3>
+                            <p class="player-rank">Diamond Player</p>
+                        </div>
+                        <div class="player-score">122,543</div>
+                    </div>
+                    <div class="player-item" tabindex="0">
+                        <div class="player-avatar">
+                            <img src="images/profile7.jpg" alt="Audrey Bell">
+                        </div>
+                        <div class="player-info">
+                            <h3 class="player-name">Audrey Bell</h3>
+                            <p class="player-rank">Diamond Player</p>
+                        </div>
+                        <div class="player-score">122,512</div>
+                    </div>
+                    <div class="player-item" tabindex="0">
+                        <div class="player-avatar">
+                            <img src="images/profile8.jpg" alt="Tyrone Hawkins">
+                        </div>
+                        <div class="player-info">
+                            <h3 class="player-name">Tyrone Hawkins</h3>
+                            <p class="player-rank">Diamond Player</p>
+                        </div>
+                        <div class="player-score">122,431</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const body = document.body;
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('expanded');
+            body.classList.toggle('collapsed');
+            toggleIcon.className = sidebar.classList.contains('collapsed') ? 'fas fa-arrow-right' : 'fas fa-bars';
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+
+        // Menu Active State
+        function setActive(element) {
+            document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        document.querySelectorAll('.menu li').forEach(item => {
+            item.addEventListener('click', () => setActive(item));
+        });
+
+        // Responsive Sidebar
+        function handleResponsiveSidebar() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                body.classList.add('collapsed');
+            }
+            if (window.innerWidth <= 480) {
+                sidebar.classList.add('collapsed');
+                sidebar.classList.remove('expanded');
+                body.classList.add('collapsed');
+            }
+        }
+
+        window.addEventListener('load', handleResponsiveSidebar);
+        window.addEventListener('resize', handleResponsiveSidebar);
+
+        // Player Modal with Event Delegation
+        document.querySelector('.leaderboard').addEventListener('click', (e) => {
+            const playerItem = e.target.closest('.player-item');
+            if (!playerItem) return;
+
+            const name = playerItem.querySelector('.player-name').textContent;
+            const score = playerItem.querySelector('.player-score').textContent;
+
+            const dialog = document.createElement('div');
+            dialog.className = 'modal';
+            dialog.innerHTML = `
+                <div class="modal-content">
+                    <h3 class="modal-title">Player Details</h3>
+                    <p class="modal-text">${name} has achieved ${score} points!</p>
+                    <button class="modal-button" aria-label="Close modal">Close</button>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+
+            const closeButton = dialog.querySelector('.modal-button');
+            closeButton.focus();
+            closeButton.onclick = () => dialog.remove();
+            dialog.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') dialog.remove();
+            });
+        });
+
+        // Keyboard Navigation for Player Items
+        document.querySelectorAll('.player-item').forEach(item => {
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    item.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="signup_page.css">
+</head>
+<body>
+    <form id="signupForm">
+        <div class="login-container">
+            <div class="icon">
+                <img src="images/logo.png" alt="User Icon">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-circle-user"></i>
+                <input type="text" id="username" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="password" name="password" placeholder="Enter Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmPassword"></i>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-user-tag"></i>
+                <select id="role" name="role" required>
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <div class="remember-forgot">
+                <label><input type="checkbox" name="remember"> Remember me</label>
+                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Forgot Password?</a>
+            </div>
+            <button type="submit" class="login-btn" id="signupButton">SIGNUP</button>
+            <p style="text-align: center; font-size: 20px; color:#fff; padding: 10px;">Or</p>
+            <p style="color: #fff;">Already have an account? <a href="index.html" style="text-decoration: none; color: #207cca;">Login</a></p>
+            <p id="message" style="color: #fff; text-align: center;"></p>
+            <div class="social">
+                <a href="#">F</a>
+                <a href="#">G</a>
+                <a href="#">A</a>
+            </div>
+        </div>
+    </form>
+    <script>
+        // Show/Hide Password Toggle for Password Field
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye');
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+
+        // Show/Hide Password Toggle for Confirm Password Field
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        toggleConfirmPassword.addEventListener('click', () => {
+            const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordInput.setAttribute('type', type);
+            toggleConfirmPassword.classList.toggle('fa-eye');
+            toggleConfirmPassword.classList.toggle('fa-eye-slash');
+        });
+
+        // Signup Form Submission
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageElement = document.getElementById('message');
+            const signupButton = document.getElementById('signupButton');
+
+            signupButton.disabled = true;
+            messageElement.textContent = 'Creating account...';
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+
+            // Client-side validation
+            if (!username || !email || !password || !confirmPassword || !role) {
+                messageElement.textContent = 'Please fill in all fields';
+                signupButton.disabled = false;
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                messageElement.textContent = 'Passwords do not match';
+                signupButton.disabled = false;
+                return;
+            }
+
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+                messageElement.textContent = 'Password must be at least 8 characters, with an uppercase letter and a number';
+                signupButton.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.user.role);
+                    localStorage.setItem('username', data.user.username);
+                    messageElement.textContent = 'Signup successful! Redirecting to login...';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    messageElement.textContent = data.message || 'Signup failed';
+                    signupButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Signup Error:', error);
+                messageElement.textContent = 'Unable to connect to the server';
+                signupButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

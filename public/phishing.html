@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>Phishing Detection Game</title>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --accent: #10B981;
+            --background: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --info: #17A2B8;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --right-sidebar-width: 280px;
+            --right-sidebar-collapsed-width: 0px;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3B82F6;
+            --sidebar-transition: 0.3s ease;
+            --border-radius-button: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            width: var(--right-sidebar-width);
+            height: 100vh;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            right: 0;
+            transition: width var(--sidebar-transition), transform var(--sidebar-transition);
+            z-index: 100;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .right-sidebar.collapsed {
+            width: var(--right-sidebar-collapsed-width);
+            transform: translateX(280px);
+        }
+
+        .right-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .mobile-close-btn {
+            display: none;
+            background: var(--error);
+            color: white;
+            padding: 8px;
+            border-radius: var(--border-radius-button);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-close-btn:hover {
+            background: #DC2626;
+        }
+
+        .player-stats {
+            background: var(--background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding-bottom: 0.75rem;
+        }
+
+        #player-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        #player-level {
+            font-size: 0.875rem;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .difficulty-levels {
+            margin-bottom: 1.5rem;
+        }
+
+        .difficulty-levels h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .difficulty-btn {
+            background: var(--background);
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-button);
+            font-size: 0.875rem;
+            text-align: left;
+            transition: background 0.2s ease;
+        }
+
+        .difficulty-btn:hover,
+        .difficulty-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .help-support {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .help-link {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .help-link:hover {
+            color: var(--secondary);
+        }
+
+        .help-link i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: var(--right-sidebar-width);
+            width: calc(100% - var(--sidebar-width) - var(--right-sidebar-width));
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            transition: all var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-width));
+        }
+
+        .right-sidebar.collapsed ~ .main-content {
+            margin-right: var(--right-sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-width) - var(--right-sidebar-collapsed-width));
+        }
+
+        .sidebar.collapsed ~ .main-content.right-sidebar.collapsed ~ .main-content {
+            width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-collapsed-width));
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            border-radius: var(--border-radius-button);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--secondary);
+        }
+
+        #page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .page-container {
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timer-bar-container {
+            height: 8px;
+            background: var(--background);
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 1s linear;
+            border-radius: 4px;
+        }
+
+        .scenario-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--background);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        #scenario-index {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .hint-btn {
+            display: flex;
+            align-items: center;
+            background: var(--info);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-button);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .hint-btn:hover {
+            background: #138496;
+        }
+
+        .hint-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .scenario-content {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .element-highlights {
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .highlight-element {
+            cursor: pointer;
+            border: 2px solid transparent;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            background: var(--background);
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .highlight-element:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .highlight-element.active {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .scenario-actions {
+            display: flex;
+            padding: 1.5rem;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-button);
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .action-btn.danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background: #DC2626;
+        }
+
+        .action-btn.safe {
+            background: var(--success);
+            color: white;
+        }
+
+        .action-btn.safe:hover {
+            background: #059669;
+        }
+
+        .action-btn.next-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.next-btn:hover {
+            background: var(--secondary);
+        }
+
+        /* Email and Website Cards */
+        .email-card, .website-card {
+            border: 1px solid var(--color-gray-200);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .email-header, .website-header {
+            background: var(--background);
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .email-field {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-field-label {
+            font-weight: 600;
+            min-width: 60px;
+            color: var(--text-muted);
+        }
+
+        .email-body, .website-body {
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .website-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .url-bar {
+            background: var(--card-bg);
+            border-radius: 4px;
+            padding: 0.5rem;
+            flex-grow: 1;
+            margin-left: 0.75rem;
+            font-family: monospace;
+            color: var(--text);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--text);
+        }
+
+        .feedback-result {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .feedback-result.correct {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .feedback-result.incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        .feedback-message {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .feedback-explanation {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 300px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main-content {
+                margin-left: 200px;
+                width: calc(100% - 200px - var(--right-sidebar-width));
+            }
+
+            .sidebar.collapsed ~ .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-width));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar .menu li span, .sidebar .footer span, .sidebar .logo {
+                display: none;
+                opacity: 0;
+            }
+
+            .sidebar .menu li, .sidebar .footer a {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+                margin-right: var(--right-sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width) - var(--right-sidebar-collapsed-width));
+            }
+
+            .right-sidebar {
+                transform: translateX(280px);
+                width: var(--right-sidebar-width);
+            }
+
+            .right-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-btn, .mobile-close-btn {
+                display: flex;
+            }
+
+            .page-container {
+                padding: 1rem;
+            }
+
+            .scenario-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .scenario-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content" id="main-content">
+            <div class="header">
+                <div class="header-content">
+                    <button id="mobile-menu" class="mobile-menu-btn" aria-label="Open menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="page-title">Phishing Detection Game</h1>
+                </div>
+            </div>
+
+            <div class="page-container">
+                <!-- Game Page -->
+                <div id="game-page" class="page active">
+                    <div class="game-container">
+                        <div class="timer-bar-container">
+                            <div id="timer-bar" class="timer-bar"></div>
+                        </div>
+
+                        <div class="scenario-card">
+                            <div class="scenario-header">
+                                <div id="scenario-index">Scenario 1/10</div>
+                                <button id="hint-btn" class="hint-btn">
+                                    <i class="fas fa-lightbulb"></i> Use Hint
+                                </button>
+                            </div>
+
+                            <div id="scenario-content" class="scenario-content">
+                                <p class="text-center">Loading scenario...</p>
+                            </div>
+
+                            <div id="element-highlights" class="element-highlights"></div>
+
+                            <div class="scenario-actions">
+                                <button id="phishing-btn" class="action-btn danger">
+                                    <i class="fas fa-exclamation-triangle"></i> Phishing
+                                </button>
+                                <button id="safe-btn" class="action-btn safe">
+                                    <i class="fas fa-shield-alt"></i> Safe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div id="right-sidebar" class="right-sidebar">
+            <div class="right-sidebar-header">
+                <button id="mobile-close" class="mobile-close-btn" aria-label="Close right sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="player-stats">
+                <div class="player-info">
+                    <span id="player-name">Player</span>
+                    <span id="player-level">Beginner</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Score</div>
+                        <div id="score" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Accuracy</div>
+                        <div id="accuracy" class="stat-value">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Level</div>
+                        <div id="level" class="stat-value">1</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Hints</div>
+                        <div id="hints" class="stat-value">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="difficulty-levels">
+                <h2>Difficulty Level</h2>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn active" data-difficulty="beginner">Beginner</button>
+                    <button class="difficulty-btn" data-difficulty="intermediate">Intermediate</button>
+                    <button class="difficulty-btn" data-difficulty="expert">Expert</button>
+                </div>
+            </div>
+
+            <div class="help-support">
+                <a href="#" class="help-link">
+                    <i class="fas fa-question-circle"></i> Help & Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">×</span>
+            <div id="feedback-result" class="feedback-result"></div>
+            <div id="feedback-message" class="feedback-message"></div>
+            <div id="feedback-explanation" class="feedback-explanation"></div>
+            <button id="next-btn" class="action-btn next-btn">Next Scenario</button>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">×</span>
+            <h2>Hint</h2>
+            <p id="hint-text"></p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const toggleIcon = document.getElementById("toggle-icon");
+            sidebar.classList.toggle("collapsed");
+            toggleIcon.classList.toggle("fa-bars");
+            toggleIcon.classList.toggle("fa-arrow-right");
+            document.getElementById("toggle-sidebar").setAttribute(
+                "aria-label",
+                sidebar.classList.contains("collapsed") ? "Expand sidebar" : "Collapse sidebar"
+            );
+        }
+
+        function toggleRightSidebar() {
+            const rightSidebar = document.getElementById("right-sidebar");
+            rightSidebar.classList.toggle("collapsed");
+        }
+
+        function setActive(element) {
+            document.querySelectorAll(".menu li").forEach(li => li.classList.remove("active"));
+            element.classList.add("active");
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+
+        // Game Mechanics
+        let scenarios = [];
+        let currentScenarioIndex = 0;
+        let timerInterval = null;
+        let timerDuration = 30;
+        let remainingTime = timerDuration;
+        let highlightedElements = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById("toggle-sidebar");
+            toggleButton.addEventListener("click", toggleSidebar);
+
+            const mobileMenuBtn = document.getElementById("mobile-menu");
+            mobileMenuBtn.addEventListener("click", () => {
+                document.getElementById("sidebar").classList.toggle("collapsed");
+            });
+
+            const mobileCloseBtn = document.getElementById("mobile-close");
+            mobileCloseBtn.addEventListener("click", toggleRightSidebar);
+
+            initGame();
+        });
+
+        function initGame() {
+            setupGameEventListeners();
+            loadScenarios();
+        }
+
+        function setupGameEventListeners() {
+            document.getElementById('hint-btn').addEventListener('click', showHint);
+            document.getElementById('phishing-btn').addEventListener('click', () => checkAnswer('phishing'));
+            document.getElementById('safe-btn').addEventListener('click', () => checkAnswer('safe'));
+            document.getElementById('next-btn').addEventListener('click', nextScenario);
+            const closeButtons = document.querySelectorAll('.close-modal');
+            closeButtons.forEach(button => button.addEventListener('click', closeModals));
+            window.addEventListener('click', (e) => {
+                const feedbackModal = document.getElementById('feedback-modal');
+                const hintModal = document.getElementById('hint-modal');
+                if (e.target === feedbackModal) feedbackModal.classList.remove('active');
+                if (e.target === hintModal) hintModal.classList.remove('active');
+            });
+        }
+
+        function closeModals() {
+            document.getElementById('feedback-modal').classList.remove('active');
+            document.getElementById('hint-modal').classList.remove('active');
+        }
+
+        function loadScenarios(difficulty = 'beginner') {
+            const scenarioContent = document.getElementById('scenario-content');
+            scenarioContent.innerHTML = '<p class="text-center">Loading scenarios...</p>';
+            fetch(`/api/scenarios?difficulty=${difficulty}`)
+                .then(response => response.json())
+                .then(data => {
+                    scenarios = data;
+                    if (scenarios.length > 0) {
+                        currentScenarioIndex = 0;
+                        displayScenario(currentScenarioIndex);
+                    } else {
+                        scenarioContent.innerHTML = '<p class="text-center">No scenarios available.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading scenarios:', error);
+                    scenarioContent.innerHTML = '<p class="text-center">Failed to load scenarios.</p>';
+                });
+        }
+
+        function displayScenario(index) {
+            if (!scenarios || index >= scenarios.length) return;
+            const scenario = scenarios[index];
+            const scenarioContent = document.getElementById('scenario-content');
+            highlightedElements = [];
+            document.getElementById('element-highlights').innerHTML = '';
+            updateScenarioCounter();
+            let contentHTML = '';
+            if (scenario.scenarioType === 'email') {
+                contentHTML = `
+                    <div class="email-card">
+                        <div class="email-header">
+                            ${scenario.sender ? `<div class="email-field"><span class="email-field-label">From:</span> ${scenario.sender} (${scenario.senderEmail})</div>` : ''}
+                            ${scenario.subject ? `<div class="email-field"><span class="email-field-label">Subject:</span> ${scenario.subject}</div>` : ''}
+                            ${scenario.date ? `<div class="email-field"><span class="email-field-label">Date:</span> ${scenario.date}</div>` : ''}
+                        </div>
+                        <div class="email-body">${formatContent(scenario.content)}</div>
+                    </div>
+                `;
+            } else if (scenario.scenarioType === 'website') {
+                contentHTML = `
+                    <div class="website-card">
+                        <div class="website-header">
+                            <i class="fas fa-globe"></i>
+                            <div class="url-bar">${scenario.content[0] || ''}</div>
+                        </div>
+                        <div class="website-body">${formatContent(scenario.content.slice(1))}</div>
+                    </div>
+                `;
+            } else {
+                contentHTML = formatContent(scenario.content);
+            }
+            scenarioContent.innerHTML = contentHTML;
+            setupPhishingElements(scenario);
+            resetTimer();
+            startTimer();
+        }
+
+        function formatContent(content) {
+            if (!content || !Array.isArray(content)) return '';
+            return content.map(line => line.includes('<') && line.includes('>') ? line : `<p>${line}</p>`).join('');
+        }
+
+        function setupPhishingElements(scenario) {
+            if (!scenario.phishingElements || scenario.phishingElements.length === 0) return;
+            const elementHighlightsContainer = document.getElementById('element-highlights');
+            let elementsHTML = '';
+            scenario.phishingElements.forEach((elementId, index) => {
+                elementsHTML += `
+                    <div id="element-${elementId}" class="highlight-element" data-element-id="${elementId}">
+                        Click here if you think element #${elementId} is suspicious
+                    </div>
+                `;
+            });
+            elementHighlightsContainer.innerHTML = elementsHTML;
+            const elements = document.querySelectorAll('.highlight-element');
+            elements.forEach(element => {
+                element.addEventListener('click', () => {
+                    const elementId = parseInt(element.getAttribute('data-element-id'));
+                    toggleElementHighlight(elementId, element);
+                });
+            });
+        }
+
+        function toggleElementHighlight(elementId, element) {
+            const elementIndex = highlightedElements.indexOf(elementId);
+            if (elementIndex === -1) {
+                highlightedElements.push(elementId);
+                element.classList.add('active');
+            } else {
+                highlightedElements.splice(elementIndex, 1);
+                element.classList.remove('active');
+            }
+        }
+
+        function updateScenarioCounter() {
+            const scenarioIndex = document.getElementById('scenario-index');
+            scenarioIndex.textContent = `Scenario ${currentScenarioIndex + 1}/${scenarios.length}`;
+        }
+
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            remainingTime = timerDuration;
+            updateTimerBar();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerBar();
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimerBar() {
+            const timerBar = document.getElementById('timer-bar');
+            const percentage = (remainingTime / timerDuration) * 100;
+            timerBar.style.width = `${percentage}%`;
+            if (percentage > 60) {
+                timerBar.style.backgroundColor = 'var(--primary)';
+            } else if (percentage > 30) {
+                timerBar.style.backgroundColor = 'var(--warning)';
+            } else {
+                timerBar.style.backgroundColor = 'var(--error)';
+            }
+        }
+
+        function timeUp() {
+            const currentScenario = scenarios[currentScenarioIndex];
+            const isPhishing = currentScenario.type === 'phishing';
+            updateAccuracy(false);
+            showFeedback(false, currentScenario, true);
+        }
+
+        function showHint() {
+            if (window.playerState.hintsRemaining <= 0) {
+                showToast('No hints remaining!');
+                return;
+            }
+            const currentScenario = scenarios[currentScenarioIndex];
+            if (!currentScenario.hints || currentScenario.hints.length === 0) {
+                showToast('No hints available for this scenario');
+                return;
+            }
+            fetch('/api/player-state/use-hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.playerState.hintsRemaining = data.hintsRemaining;
+                        window.updatePlayerStatsUI();
+                        const hintModal = document.getElementById('hint-modal');
+                        const hintText = document.getElementById('hint-text');
+                        const randomIndex = Math.floor(Math.random() * currentScenario.hints.length);
+                        hintText.textContent = currentScenario.hints[randomIndex];
+                        hintModal.classList.add('active');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error using hint:', error);
+                    showToast('Failed to use hint');
+                });
+        }
+
+        function checkAnswer(answer) {
+            const currentScenario = scenarios[currentScenarioIndex];
+            const isPhishing = currentScenario.type === 'phishing';
+            const isCorrect = (answer === 'phishing' && isPhishing) || (answer === 'safe' && !isPhishing);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            let points = 0;
+            if (isCorrect) {
+                points = 10;
+                const timeBonus = Math.floor((remainingTime / timerDuration) * 10);
+                points += timeBonus;
+                if (isPhishing && highlightedElements.length > 0) {
+                    const correctElements = highlightedElements.filter(id => currentScenario.phishingElements.includes(id));
+                    points += correctElements.length * 5;
+                }
+            }
+            if (points > 0) updateScore(points);
+            updateAccuracy(isCorrect);
+            showFeedback(isCorrect, currentScenario);
+        }
+
+        function updateScore(points) {
+            fetch('/api/player-state/score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.playerState.score = data.newScore;
+                        window.updatePlayerStatsUI();
+                    }
+                })
+                .catch(error => console.error('Error updating score:', error));
+        }
+
+        function updateAccuracy(isCorrect) {
+            window.playerState.totalAnswers++;
+            if (isCorrect) window.playerState.correctAnswers++;
+            const newAccuracy = Math.round((window.playerState.correctAnswers / window.playerState.totalAnswers) * 100);
+            window.playerState.accuracy = newAccuracy;
+            window.updatePlayerStatsUI();
+        }
+
+        function showFeedback(isCorrect, scenario, isTimeout = false) {
+            const feedbackModal = document.getElementById('feedback-modal');
+            const feedbackResult = document.getElementById('feedback-result');
+            const feedbackMessage = document.getElementById('feedback-message');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+            feedbackResult.className = 'feedback-result';
+            feedbackResult.classList.add(isCorrect ? 'correct' : 'incorrect');
+            if (isTimeout) {
+                feedbackResult.textContent = "Time's Up!";
+                feedbackMessage.textContent = "You ran out of time for this scenario.";
+            } else {
+                feedbackResult.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+                feedbackMessage.textContent = isCorrect ? 'Great job identifying this scenario.' : 'This scenario was ' + (scenario.type === 'phishing' ? 'a phishing attempt.' : 'safe.');
+            }
+            let explanationHTML = '';
+            if (scenario.explanations && scenario.explanations.length > 0) {
+                explanationHTML = '<p><strong>Explanation:</strong></p><ul>';
+                scenario.explanations.forEach(explanation => explanationHTML += `<li>${explanation}</li>`);
+                explanationHTML += '</ul>';
+            }
+            if (scenario.tips) explanationHTML += `<p><strong>Tip:</strong> ${scenario.tips}</p>`;
+            if (scenario.type === 'phishing' && scenario.phishingElements && scenario.phishingElements.length > 0) {
+                const correctElements = highlightedElements.filter(id => scenario.phishingElements.includes(id));
+                const incorrectElements = highlightedElements.filter(id => !scenario.phishingElements.includes(id));
+                const missedElements = scenario.phishingElements.filter(id => !highlightedElements.includes(id));
+                explanationHTML += '<p><strong>Phishing Elements:</strong></p>';
+                if (correctElements.length > 0) explanationHTML += `<p style="color: var(--success);">✓ You correctly identified ${correctElements.length} suspicious elements.</p>`;
+                if (incorrectElements.length > 0) explanationHTML += `<p style="color: var(--error);">✗ You incorrectly flagged ${incorrectElements.length} elements as suspicious.</p>`;
+                if (missedElements.length > 0) explanationHTML += `<p style="color: var(--warning);">⚠ You missed ${missedElements.length} suspicious elements.</p>`;
+            }
+            feedbackExplanation.innerHTML = explanationHTML;
+            feedbackModal.classList.add('active');
+            completeScenario();
+        }
+
+        function completeScenario() {
+            fetch('/api/player-state/complete-scenario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.playerState.scenariosCompleted = data.scenariosCompleted;
+                        window.playerState.currentLevel = data.currentLevel;
+                        window.updatePlayerStatsUI();
+                    }
+                })
+                .catch(error => console.error('Error completing scenario:', error));
+        }
+
+        function nextScenario() {
+            closeModals();
+            currentScenarioIndex++;
+            if (currentScenarioIndex >= scenarios.length) {
+                currentScenarioIndex = 0;
+                showToast('Starting scenarios from the beginning');
+            }
+            displayScenario(currentScenarioIndex);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        window.loadScenarios = loadScenarios;
+    </script>
+</body>
+</html>

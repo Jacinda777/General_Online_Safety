@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeGuard Cybersecurity News</title>
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --info: #17A2B8;
+            --background: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3B82F6;
+            --sidebar-transition: 0.3s ease;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            flex-grow: 1;
+            padding: 2rem;
+            transition: all var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .news-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .news-card h3 {
+            font-size: 1.25rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .news-card .source-date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .news-card .description {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .news-card .read-more {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .news-card .read-more:hover {
+            background: var(--secondary);
+        }
+
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .refresh-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 300px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--error); }
+        .toast-warning { background: var(--warning); }
+        .toast-info { background: var(--info); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar .menu li span, .sidebar .logo {
+                display: none;
+                opacity: 0;
+            }
+
+            .sidebar .menu li {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width));
+                padding: 1rem;
+            }
+
+            .news-card .source-date, .news-card .description {
+                font-size: 0.75rem;
+            }
+
+            .refresh-btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Security News Page -->
+            <div id="security-news" class="page active">
+                <header>
+                    <h1>Cybersecurity News</h1>
+                </header>
+                <div id="news-container"></div>
+                <button class="refresh-btn" id="refresh-news" aria-label="Refresh news">
+                    <i class="fas fa-sync-alt"></i> Refresh News
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Sidebar Management
+        const sidebar = document.getElementById('sidebar');
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            const toggleIcon = document.getElementById('toggle-icon');
+            toggleIcon.classList.toggle('fa-bars');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            document.getElementById('toggle-sidebar').setAttribute(
+                'aria-label',
+                sidebar.classList.contains('collapsed') ? 'Expand sidebar' : 'Collapse sidebar'
+            );
+        }
+
+        function handleResponsiveSidebar() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+            }
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'security-news') {
+                loadNews();
+            }
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // Data Fetcher
+        window.DataFetcher = {
+            async fetchSecurityNews() {
+                try {
+                    return [
+                        {
+                            title: 'Judge blocks DOGE access to sensitive Social Security data',
+                            source: 'NPR',
+                            date: '2025-04-18',
+                            description: 'A federal judge in Maryland granted a preliminary injunction barring DOGE staffers from accessing non-anonymized personal data at the Social Security Administration.',
+                            url: 'https://www.npr.org'
+                        },
+                        {
+                            title: 'Zambian cyber-security law: US embassy issues alert',
+                            source: 'BBC',
+                            date: '2025-04-17',
+                            description: 'The US says Zambia’s new Cyber Security Act, empowering law enforcement to seize computers, is more intrusive than equivalents in other countries.',
+                            url: 'https://www.bbc.com'
+                        },
+                        {
+                            title: 'US agency extends support for cyber vulnerability database',
+                            source: 'Reuters',
+                            date: '2025-04-16',
+                            description: 'The Cybersecurity and Infrastructure Security Agency extended funding for the CVE database for 11 months, ensuring no lapse in critical vulnerability tracking.',
+                            url: 'https://www.reuters.com'
+                        },
+                        {
+                            title: 'US Govt. Funding for MITRE’s CVE Ends April 16',
+                            source: 'The Hacker News',
+                            date: '2025-04-15',
+                            description: 'The CVE program faced a funding cutoff, risking delays in vulnerability tracking, but CISA’s last-minute extension avoided a service break.',
+                            url: 'https://thehackernews.com'
+                        },
+                        {
+                            title: 'DOGE may have caused cybersecurity breach at US labor watchdog',
+                            source: 'Reuters',
+                            date: '2025-04-15',
+                            description: 'A whistleblower complaint suggests Elon Musk’s DOGE team may have caused a significant cybersecurity breach of sensitive case files at the federal labor watchdog.',
+                            url: 'https://www.reuters.com'
+                        },
+                        {
+                            title: 'Chinese Hacking Group Uses Open-Source Tools',
+                            source: 'CyberScoop',
+                            date: '2025-04-17',
+                            description: 'A Chinese state-sponsored group was observed using open-source offensive security tools to blend with cybercriminal activity.',
+                            url: 'https://www.cyberscoop.com'
+                        },
+                        {
+                            title: 'Mobile Spyware Attacks on the Rise',
+                            source: 'Cybersecurity Snapshot',
+                            date: '2025-04-18',
+                            description: 'Cyber agencies warn of increasing mobile spyware attacks targeting personal devices.',
+                            url: 'https://www.cybersecuritysnapshot.com'
+                        }
+                    ];
+                } catch (error) {
+                    console.error('Failed to fetch security news:', error);
+                    showToast('Failed to load security news.', 'error');
+                    return [];
+                }
+            }
+        };
+
+        // Main Application Logic
+        (function() {
+            const newsContainer = document.getElementById('news-container');
+            const refreshNewsBtn = document.getElementById('refresh-news');
+
+            async function initializeApp() {
+                try {
+                    handleResponsiveSidebar();
+                    document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
+                    window.addEventListener('resize', handleResponsiveSidebar);
+
+                    loadNews();
+                    setupEventListeners();
+                } catch (error) {
+                    console.error('App initialization failed:', error);
+                    showToast('Failed to initialize news page', 'error');
+                }
+            }
+
+            async function loadNews() {
+                newsContainer.innerHTML = `
+                    <div class="news-card">
+                        <div class="flex items-center justify-center flex-col gap-2 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-primary text-2xl"></i>
+                            <p>Loading cybersecurity news...</p>
+                        </div>
+                    </div>
+                `;
+
+                const news = await window.DataFetcher.fetchSecurityNews();
+                if (news.length > 0) {
+                    renderNews(news);
+                    showToast('Cybersecurity news loaded successfully', 'success');
+                } else {
+                    newsContainer.innerHTML = `
+                        <div class="news-card">
+                            <div class="flex items-center justify-center flex-col gap-2 text-gray-500">
+                                <i class="fas fa-exclamation-circle text-error text-2xl"></i>
+                                <p>Failed to load cybersecurity news</p>
+                                <button id="retry-news" class="refresh-btn">
+                                    <i class="fas fa-sync-alt"></i> Retry
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('retry-news').addEventListener('click', loadNews);
+                }
+            }
+
+            function renderNews(news) {
+                newsContainer.innerHTML = news.map((article, index) => `
+                    <div class="news-card" style="animation-delay: ${index * 100}ms">
+                        <h3>${article.title}</h3>
+                        <p class="source-date">${article.source} | ${article.date}</p>
+                        <p class="description">${article.description}</p>
+                        <a href="${article.url}" class="read-more" target="_blank" rel="noopener" aria-label="Read more about ${article.title}">Read More</a>
+                    </div>
+                `).join('');
+            }
+
+            function setupEventListeners() {
+                refreshNewsBtn.addEventListener('click', async () => {
+                    refreshNewsBtn.classList.add('animate-spin');
+                    const news = await window.DataFetcher.fetchSecurityNews();
+                    setTimeout(() => {
+                        refreshNewsBtn.classList.remove('animate-spin');
+                        if (news.length > 0) {
+                            renderNews(news);
+                            showToast('News refreshed successfully', 'success');
+                        } else {
+                            showToast('Failed to refresh news', 'error');
+                }
+                    }, 800);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        })();
+    </script>
+</body>
+</html>

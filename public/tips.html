@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="tips.css">
+    <title>Did You Know? - Cybersecurity Facts</title>    
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li>
+                    <a href="chatbot_dashboard.html">
+                        <i class="fas fa-home"></i> 
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="tips.html">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html">
+                        <i class="fas fa-clipboard-list"></i> 
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html">
+                        <i class="fas fa-trophy"></i> 
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html">
+                    <i class="fas fa-sign-out-alt"></i> 
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="main-content">
+            <header class="header">
+                <h1 class="gradient-text">Did You Know?</h1>
+                <p class="subtitle">Discover fascinating facts about cybersecurity and stay informed about the digital world.</p>
+            </header>
+
+            <div class="search-section">
+                <div class="search-title">
+                    <i class="fas fa-search"></i> Find Cybersecurity Facts
+                </div>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search facts..." class="search-input">
+                    <select id="categoryFilter" class="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="Network Security">Network Security</option>
+                        <option value="Social Engineering">Social Engineering</option>
+                        <option value="Data Protection">Data Protection</option>
+                        <option value="Password Security">Password Security</option>
+                        <option value="Malware">Malware</option>
+                        <option value="Privacy">Privacy</option>
+                        <option value="Best Practices">Best Practices</option>
+                        <option value="Mobile Security">Mobile Security</option>
+                        <option value="IoT Security">IoT Security</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="factsGrid" class="facts-grid">
+                <!-- Facts will be dynamically inserted here -->
+            </div>
+            <button id="backToTop" class="back-to-top" title="Back to top">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+const factsGrid = document.getElementById('factsGrid');
+const searchInput = document.getElementById('searchInput');
+const categoryFilter = document.getElementById('categoryFilter');
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('main-content');
+const toggleBtn = document.getElementById('toggle-sidebar');
+
+// Cybersecurity facts data
+const facts = [
+    {
+        id: 1,
+        title: "The First Computer Virus",
+        content: "The first computer virus, called 'Creeper', was created in 1971. It was actually an experimental self-replicating program that wasn't designed to cause damage.",
+        category: "Malware",
+        source: "Computer History Museum",
+        imageUrl: "images/virus.jpg"
+    },
+    {
+        id: 2,
+        title: "Password Facts",
+        content: "The most common password is still '123456', followed by 'password'. These weak passwords can be cracked in less than a second.",
+        category: "Password Security",
+        source: "National Cyber Security Centre",
+        imageUrl: "images/password.jpg"
+    },
+    {
+        id: 3,
+        title: "Phishing Statistics",
+        content: "Over 90% of successful cyber attacks start with a phishing email. Training employees to recognize these attacks is crucial.",
+        category: "Social Engineering",
+        source: "Cybersecurity & Infrastructure Security Agency",
+        imageUrl: "images/Phishing.jpeg"
+    },
+    {
+        id: 4,
+        title: "Zero-Day Vulnerabilities",
+        content: "A zero-day vulnerability is a software flaw that's unknown to the developers and has no patch available. Hackers can exploit these vulnerabilities before the developers have the opportunity to fix them.",
+        category: "Network Security",
+        source: "NIST Cybersecurity Framework",
+        imageUrl: "images/Zero Day Vulnerability.jpg"
+    },
+    {
+        id: 5,
+        title: "Ransomware Costs",
+        content: "The global cost of ransomware damage is predicted to exceed $20 billion annually. Organizations are increasingly paying ransoms, which encourages more attacks.",
+        category: "Malware",
+        source: "Cybersecurity Ventures",
+        imageUrl: "images/ransomware.jpg"
+    },
+    {
+        id: 6,
+        title: "Two-Factor Authentication",
+        content: "Two-factor authentication (2FA) can prevent 99.9% of automated attacks. Yet, less than 10% of users take advantage of this security feature.",
+        category: "Best Practices",
+        source: "Microsoft Security Research",
+        imageUrl: "images/2fa.jpg"
+    },
+    {
+        id: 7,
+        title: "Cybersecurity Talent Gap",
+        content: "There's a global shortage of cybersecurity professionals, with over 3.5 million unfilled positions expected by 2025. This skills gap poses a significant risk to organizations worldwide.",
+        category: "Best Practices",
+        source: "ISC² Cybersecurity Workforce Study",
+        imageUrl: "images/cyber talent.jpg"
+    },
+    {
+        id: 8,
+        title: "IoT Device Security",
+        content: "The average IoT device is attacked within 5 minutes of connecting to the internet. Many devices ship with default passwords and outdated firmware, making them easy targets.",
+        category: "IoT Security",
+        source: "NetScout Threat Intelligence Report",
+        imageUrl: "images/IoT.jpeg"
+    },
+    {
+        id: 9,
+        title: "GDPR Fines",
+        content: "Under GDPR, companies can be fined up to 4% of their annual global turnover or €20 million (whichever is greater) for data breaches. Several major companies have already faced significant penalties.",
+        category: "Data Protection",
+        source: "European Data Protection Board",
+        imageUrl: "images/GDPR fines.jpg"
+    },
+    {
+        id: 10,
+        title: "Mobile Malware",
+        content: "Mobile malware attacks have increased by over 50% in recent years. Android devices are particularly vulnerable due to the open ecosystem and fragmented update process.",
+        category: "Mobile Security",
+        source: "McAfee Mobile Threat Report",
+        imageUrl: "images/mobile malware.jpg"
+    },
+    {
+        id: 11,
+        title: "Cost of Data Breaches",
+        content: "The average cost of a data breach has reached $4.24 million per incident. Healthcare organizations face the highest costs, averaging $9.23 million per breach.",
+        category: "Data Protection",
+        source: "IBM Cost of a Data Breach Report",
+        imageUrl: "images/data breach cost.jpg"
+    },
+    {
+        id: 12,
+        title: "Public Wi-Fi Dangers",
+        content: "Public Wi-Fi networks are incredibly risky. Hackers can easily set up fake networks or intercept data on legitimate ones. Always use a VPN when connecting to public Wi-Fi.",
+        category: "Network Security",
+        source: "Norton Cyber Security Insights Report",
+        imageUrl: "images/public wifi.jpg"
+    },
+    {
+        id: 13,
+        title: "Social Media Privacy",
+        content: "Over 70% of social media users share information that could be used to compromise their security, including birth dates, pet names, and location data that can be exploited for password resets or social engineering.",
+        category: "Privacy",
+        source: "Pew Research Center",
+        imageUrl: "images/social media.jpg"
+    },
+    {
+        id: 14,
+        title: "Browser Extension Risks",
+        content: "Browser extensions often have full access to everything you do online. Malicious extensions can steal your data, track your browsing habits, or inject ads. Only install extensions from trusted sources and regularly review your installed extensions.",
+        category: "Privacy",
+        source: "Google Chrome Security Team",
+        imageUrl: "https://images.unsplash.com/photo-1541877944-ac82a091518a"
+    },
+    {
+        id: 15,
+        title: "Quantum Computing Threat",
+        content: "Quantum computers could potentially break most of today's encryption standards. Organizations are already developing 'quantum-resistant' cryptography to prepare for this threat.",
+        category: "Network Security",
+        source: "National Institute of Standards and Technology",
+        imageUrl: "images/quantum computing threats.jpg"
+    },
+    {
+        id: 16,
+        title: "AI-Powered Threats",
+        content: "Artificial intelligence is being used to create more sophisticated phishing emails, deepfakes, and social engineering attacks that can bypass traditional security measures.",
+        category: "Social Engineering",
+        source: "Europol Cybercrime Centre",
+        imageUrl: "images/ai threat.jpg"
+    },
+    {
+        id: 17,
+        title: "USB Attacks",
+        content: "Plugging an unknown USB drive into your computer can lead to instant malware infection. Some specially crafted USB devices can even mimic keyboards to execute commands.",
+        category: "Malware",
+        source: "US-CERT Advisory",
+        imageUrl: "images/usb attack.jpg"
+    },
+    {
+        id: 18,
+        title: "Supply Chain Attacks",
+        content: "Supply chain attacks target software vendors to compromise their distribution systems, allowing attackers to insert malware into legitimate software updates that are then distributed to customers.",
+        category: "Network Security",
+        source: "Cybersecurity and Infrastructure Security Agency",
+        imageUrl: "images/supply chain.jpg"
+    },
+    {
+        id: 19,
+        title: "Biometric Security Limitations",
+        content: "While biometrics (fingerprints, facial recognition) offer convenience, they have limitations. Unlike passwords, you can't change your fingerprints if they're compromised. Always use biometrics along with another factor.",
+        category: "Password Security",
+        source: "IEEE Security & Privacy",
+        imageUrl: "images/Biometric Security.jpg"
+    },
+    {
+        id: 20,
+        title: "Credential Stuffing",
+        content: "Hackers use automated tools to try username/password combinations from data breaches on multiple sites. This works because many people reuse the same passwords across different services.",
+        category: "Password Security",
+        source: "OWASP Foundation",
+        imageUrl: "images/credential surfing.png"
+    },
+    {
+        id: 21,
+        title: "Cloud Security Shared Responsibility",
+        content: "In cloud computing, security is a shared responsibility. Cloud providers secure the infrastructure, but customers are responsible for securing their data, identities, and applications.",
+        category: "Best Practices",
+        source: "Cloud Security Alliance",
+        imageUrl: "images/cloud security.jpg"
+    },
+    {
+        id: 22,
+        title: "Digital Inheritance",
+        content: "Consider your 'digital inheritance' - what happens to your online accounts and digital assets after death? Many platforms now offer legacy contact options or digital estate planning.",
+        category: "Best Practices",
+        source: "Electronic Frontier Foundation",
+        imageUrl: "images/digital inheritance.jpg"
+    },
+    {
+        id: 23,
+        title: "Smart Home Vulnerabilities",
+        content: "Smart home devices create new entry points for attackers. A vulnerable smart thermostat or doorbell could provide access to your entire home network. Keep firmware updated and use network segmentation.",
+        category: "IoT Security",
+        source: "Smart Home Cybersecurity Alliance",
+        imageUrl: "images/Smart Home Vulnerabilities.jpg"
+    },
+    {
+        id: 24,
+        title: "SIM Swapping",
+        content: "SIM swapping occurs when attackers convince your mobile carrier to transfer your phone number to their SIM card, allowing them to bypass SMS-based 2FA and reset your passwords.",
+        category: "Mobile Security",
+        source: "Federal Trade Commission",
+        imageUrl: "images/sim swapping.jpg"
+    },
+    {
+        id: 25,
+        title: "HTTPS Importance",
+        content: "Websites without HTTPS (secure) connections transmit data in plaintext that can be easily intercepted. Modern browsers now mark non-HTTPS sites as 'Not Secure', but many users ignore these warnings.",
+        category: "Network Security",
+        source: "Let's Encrypt Initiative",
+        imageUrl: "images/https.jpg"
+    },
+    {
+        id: 26,
+        title: "Data Breach Notification Laws",
+        content: "Many countries have laws requiring organizations to notify affected individuals within a certain timeframe after a data breach. However, compliance varies widely, and many breaches go unreported.",
+        category: "Data Protection",
+        source: "International Association of Privacy Professionals",
+        imageUrl: "images/data breach.jpg"
+    },
+    {
+        id: 27,
+        title: "Cybersecurity Insurance",
+        content: "Cybersecurity insurance can help organizations recover from data breaches and cyber attacks. However, policies vary widely, and some insurers are tightening coverage due to the increasing frequency of attacks.",
+        category: "Best Practices",
+        source: "Insurance Information Institute",
+        imageUrl: "images/cybersecurity insurance.jpg"
+    },
+    {
+        id: 28,
+        title: "Deepfake Technology",
+        content: "Deepfake technology uses AI to create realistic fake videos or audio recordings. This technology poses significant risks for misinformation, fraud, and identity theft.",
+        category: "Social Engineering",
+        source: "Deepfake Detection Challenge",
+        imageUrl: "images/deep fake.png"
+    },
+    {
+        id: 29,
+        title: "Cybersecurity Awareness Training",
+        content: "Regular cybersecurity awareness training can reduce the risk of successful phishing attacks by up to 70%. Employees are often the weakest link in security, so training is essential.",
+        category: "Best Practices",
+        source: "SANS Institute",
+        imageUrl: "images/cyber awareness.jpg"
+    },
+    {
+        id: 30,
+        title: "Data Encryption",
+        content: "Encrypting sensitive data can protect it from unauthorized access, even if it's stolen. Many organizations are now required by law to encrypt personal data.",
+        category: "Data Protection",
+        source: "National Institute of Standards and Technology",
+        imageUrl: "images/data.jpeg"
+    }
+];
+
+// Toggle sidebar function
+function toggleSidebar() {
+    sidebar.classList.toggle('collapsed');
+    sidebar.classList.toggle('expanded');
+    mainContent.classList.toggle('expanded');
+}
+
+// Set active menu item
+function setActive(element) {
+    // Remove active class from all menu items
+    document.querySelectorAll('.menu li').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked menu item
+    element.classList.add('active');
+}
+
+// Create a fact card
+function createFactCard(fact) {
+    const card = document.createElement('div');
+    card.className = 'fact-card';
+    
+    // Use background-image for better control and fallback
+    const imageStyle = fact.imageUrl ? 
+        `<div class="fact-card-image" style="background-image: url('${fact.imageUrl}')"></div>` : 
+        '';
+    
+    card.innerHTML = `
+        ${imageStyle}
+        <div class="fact-card-content">
+            <span class="fact-card-category" data-category="${fact.category}">${fact.category}</span>
+            <h3 class="fact-card-title">${fact.title}</h3>
+            <p class="fact-card-text">${fact.content}</p>
+            ${fact.source ? `<p class="fact-card-source">Source: ${fact.source}</p>` : ''}
+        </div>
+    `;
+    
+    return card;
+}
+
+// Filter facts based on search and category
+function filterFacts() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+    
+    const filteredFacts = facts.filter(fact => {
+        const matchesSearch = fact.title.toLowerCase().includes(searchTerm) ||
+                            fact.content.toLowerCase().includes(searchTerm);
+        const matchesCategory = !selectedCategory || fact.category === selectedCategory;
+        
+        return matchesSearch && matchesCategory;
+    });
+    
+    displayFacts(filteredFacts);
+}
+
+// Display facts in the grid
+function displayFacts(factsToDisplay) {
+    factsGrid.innerHTML = '';
+    
+    if (factsToDisplay.length === 0) {
+        factsGrid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>No cybersecurity facts found matching your criteria.</p>
+                <p>Try adjusting your search terms or selecting a different category.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    factsToDisplay.forEach(fact => {
+        factsGrid.appendChild(createFactCard(fact));
+    });
+}
+
+// Event listeners
+searchInput.addEventListener('input', filterFacts);
+categoryFilter.addEventListener('change', filterFacts);
+toggleBtn.addEventListener('click', toggleSidebar);
+
+// Initialize menu item click handlers
+document.querySelectorAll('.menu li').forEach(item => {
+    item.addEventListener('click', function() {
+        setActive(this);
+    });
+});
+
+// Handle responsive sidebar behavior
+function handleResponsiveSidebar() {
+    if (window.innerWidth <= 576) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+}
+
+// Back to top button functionality
+const backToTopButton = document.getElementById('backToTop');
+// Show/hide the back to top button based on scroll position
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+        backToTopButton.classList.add('visible');
+    } else {
+        backToTopButton.classList.remove('visible');
+    }
+});
+// Scroll to top when the button is clicked
+backToTopButton.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+
+// Initial display
+displayFacts(facts);
+handleResponsiveSidebar();
+
+// Add resize event listener for responsive design
+window.addEventListener('resize', handleResponsiveSidebar);
+
+    </script>
+</body>
+</html>

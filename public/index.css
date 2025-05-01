@@ -1,0 +1,131 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #021027, #092143);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .icon {
+            width: 10vw;
+            height: 10vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+
+        .icon img {
+            width: 17vw;
+            height: 20vh;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            background: none;
+            border: none;
+            outline: none;
+            flex: 1;
+            padding: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .input-group img {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #1e5799, #207cca);
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s ease;
+            width: 100%;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #207cca, #1e5799);
+        }
+
+        .social {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .social a {
+      width: 35px;
+      height: 35px;
+      background: #f5f5f5;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      color: #666;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    .social a:hover {
+      background: #567bf3;
+      color: #fff;
+    }
+    
+    /* Styling for the show password toggle */
+    .input-group {
+        position: relative;
+    }
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #fff;
+        opacity: 0.7;
+    }
+    .toggle-password:hover {
+        opacity: 1;
+    }

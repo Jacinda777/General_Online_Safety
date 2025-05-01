@@ -1,0 +1,119 @@
+/* General Styling */
+body {
+margin: 0;
+padding: 0;
+font-family: Arial, sans-serif;
+background: linear-gradient(135deg, #021027, #092143);
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+
+.container {
+text-align: center;
+padding: 20px;
+max-width: 900px;
+background-color: white;
+border-radius: 15px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 20px;
+}
+
+/* Chatbot Section */
+.chatbot-section {
+display: flex;
+flex-direction: row;
+align-items: center;
+gap: 30px;
+width: 100%;
+}
+
+.robot-image {
+width: 250px; /* Increased width for larger image */
+height: auto;
+}
+
+.welcome-text {
+flex: 1;
+text-align: left;
+}
+
+.welcome-text h1 {
+font-size: 2rem;
+margin: 0;
+}
+
+.welcome-text p {
+font-size: 1.2rem;
+color: #555;
+line-height: 1.5;
+}
+
+.wave {
+animation: wave 1.5s infinite;
+display: inline-block;
+}
+
+@keyframes wave {
+0% { transform: rotate(0deg); }
+25% { transform: rotate(20deg); }
+50% { transform: rotate(0deg); }
+75% { transform: rotate(-20deg); }
+100% { transform: rotate(0deg); }
+}
+
+/* Get Started Button */
+.get-started {
+margin-top: 20px;
+width: 100%;
+}
+
+.start-button {
+display: inline-block;
+background-color: #0000ff;
+color: white;
+font-size: 1.2rem;
+text-decoration: none;
+padding: 10px 30px;
+border-radius: 30px;
+font-weight: bold;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background-color 0.3s ease-in-out;
+width: 200px;
+margin: 0 auto;
+}
+
+.start-button span {
+font-size: 1.5rem;
+margin-right: 10px;
+}
+
+.start-button:hover {
+background-color: #003cb3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+.chatbot-section {
+ flex-direction: column;
+ text-align: center;
+}
+
+.welcome-text {
+ text-align: center;
+}
+
+.robot-image {
+ width: 200px; /* Reduced size for smaller screens */
+}
+
+.start-button {
+ width: 100%;
+}
+}

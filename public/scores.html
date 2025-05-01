@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="scores.css">
+  <title>Quiz Scores</title>
+</head>
+<body>
+  <!-- Scores Container -->
+  <div class="scores-container">
+    <h1 class="scores-title">Quiz Scores</h1>
+    <ul class="scores-list" id="scores-list">
+      <!-- Scores for each question will be dynamically generated here -->
+    </ul>
+    <div class="total-score" id="total-score">Total Marks: 0</div>
+    <button class="finish-button" onclick="goToLeaderboard()">Finish</button>
+  </div>
+
+  <script>
+    // Mock Data for Quiz Results
+    const quizResults = [
+      { question: 1, correct: true, marks: 10 },
+      { question: 2, correct: false, marks: 0 },
+      { question: 3, correct: true, marks: 10 },
+      { question: 4, correct: true, marks: 10 }
+    ];
+
+    // Populate Scores List
+    function populateScores() {
+      const scoresList = document.getElementById('scores-list');
+      const totalScoreElement = document.getElementById('total-score');
+      let totalMarks = 0;
+
+      quizResults.forEach(result => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>Question ${result.question}:</strong> 
+          ${result.correct ? "Correct ✅" : "Incorrect ❌"} 
+          - Marks: ${result.marks}
+        `;
+        scoresList.appendChild(listItem);
+        totalMarks += result.marks;
+      });
+
+      // Update Total Marks
+      totalScoreElement.textContent = `Total Marks: ${totalMarks}`;
+    }
+
+    // Navigate to Leaderboard
+    function goToLeaderboard() {
+      window.location.href = "leaderboard.html"; // Replace with your leaderboard page URL
+    }
+
+    // Initialize Scores Page
+    populateScores();
+  </script>
+</body>
+</html>

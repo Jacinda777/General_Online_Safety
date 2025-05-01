@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <form id="loginForm">
+        <div class="login-container">
+            <div class="icon">
+                <img src="images/logo.png" alt="User Icon">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+            </div>
+            <div class="remember-forgot">
+                <label><input type="checkbox" name="remember"> Remember me</label>
+                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Forgot Password?</a>
+            </div>
+            <button type="submit" class="login-btn" id="loginButton">LOGIN</button>
+            <p style="text-align: center; font-size: 20px; color:#fff; padding: 10px;">Or</p>
+            <p style="color: #fff;">Create an account here <a href="signup_page.html" style="text-decoration: none; color: #207cca;">SignUp</a></p>
+            <p id="message" style="color: #fff; text-align: center;"></p>
+            <div class="social">
+                <a href="#">F</a>
+                <a href="#">G</a>
+                <a href="#">A</a>
+            </div>
+        </div>
+    </form>
+    <script>
+        // Show/Hide Password Toggle for Login
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('loginPassword');
+        
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye');
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+        
+        // Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageElement = document.getElementById('message');
+            const loginButton = document.getElementById('loginButton');
+            
+            loginButton.disabled = true;
+            messageElement.textContent = 'Logging in...';
+        
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+        
+            console.log('Login attempt:', { email }); // Debug log
+        
+            if (!email || !password) {
+                messageElement.textContent = 'Please fill in all fields';
+                loginButton.disabled = false;
+                return;
+            }
+        
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+        
+                const data = await response.json();
+                console.log('Response:', data); // Debug log
+        
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.user.role);
+                    localStorage.setItem('username', data.user.username);
+                    messageElement.textContent = 'Login successful!';
+                    setTimeout(() => {
+                        // Redirect based on role
+                        const redirectPage = data.user.role === 'Admin' ? 'admin.html' : 'chatbot_intro.html';
+                        window.location.href = redirectPage;
+                    }, 1000);
+                } else {
+                    messageElement.textContent = data.message || 'Login failed';
+                    loginButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Login Error:', error);
+                messageElement.textContent = 'Unable to connect to the server';
+                loginButton.disabled = false;
+            }
+        });
+        </script>
+</body>
+</html>

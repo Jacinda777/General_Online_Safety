@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard Assistant</title>
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0e4386;
+            --secondary-color: #f7f9fc;
+            --text-color: #333;
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 70px;
+            --sidebar-bg: linear-gradient(180deg, #0e4386 0%, #1a5ab8 100%);
+            --sidebar-hover: rgba(255, 255, 255, 0.1);
+            --transition: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: width var(--transition);
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            max-height: 40px;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            background: var(--sidebar-hover);
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 15px;
+        }
+
+        .menu li {
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+
+        .menu li span {
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .footer {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        /* Chat Area Styles */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px 25px;
+            background: white;
+            border-bottom: 1px solid #eef1f5;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: var(--secondary-color);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            margin-left: auto;
+        }
+
+        .message-content {
+            padding: 12px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message.system .message-content {
+            background: white;
+            border: 1px solid #eef1f5;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-left: 8px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eef1f5;
+        }
+
+        .input-wrapper {
+            display: flex;
+            background: #f5f7fa;
+            border-radius: 25px;
+            padding: 5px;
+            transition: var(--transition);
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        #sendMessageBtn {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 0 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #sendMessageBtn:hover {
+            background: #0d3872;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .typing-indicator .dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator .dot {
+            width: 6px;
+            height: 6px;
+            background: #95a5a6;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(14, 67, 134, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .chat-container {
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="Logo" class="logo">
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li><a href="chatbot_dashboard.html"><i class="fas fa-home"></i><span>Home</span></a></li>
+                <li><a href="tips.html"><i class="fas fa-question-circle"></i><span>Did You Know</span></a></li>
+                <li><a href="faq.html"><i class="fas fa-clipboard-list"></i><span>FAQ</span></a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i><span>Leaderboard</span></a></li>
+                <li class="active"><a href="chatbot.html"><i class="fas fa-robot"></i><span>Chatbot</span></a></li>
+            </ul>
+            <div class="footer">
+                <a href="index.html"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <button id="toggleSidebarBtn" class="toggle-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>CyberGuard Assistant</h1>
+            </div>
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Ask about cybersecurity...">
+                    <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const elements = {
+            sidebar: document.getElementById('sidebar'),
+            messagesContainer: document.getElementById('messagesContainer'),
+            messageInput: document.getElementById('messageInput'),
+            sendMessageBtn: document.getElementById('sendMessageBtn'),
+            toggleSidebarBtn: document.getElementById('toggleSidebarBtn')
+        };
+
+        let sessionId = Math.random().toString(36).slice(2);
+        let isTyping = false;
+
+        // Initialize Chat
+        document.addEventListener('DOMContentLoaded', () => {
+            addSystemMessage("Hello! I'm CyberGuard Assistant. How can I help you with cybersecurity today?");
+            elements.sendMessageBtn.addEventListener('click', sendMessage);
+            elements.messageInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
+            elements.toggleSidebarBtn.addEventListener('click', () => elements.sidebar.classList.toggle('open'));
+        });
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            elements.sidebar.classList.toggle('collapsed');
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const content = elements.messageInput.value.trim();
+            if (!content) return;
+
+            addUserMessage(content);
+            elements.messageInput.value = '';
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, sessionId })
+                });
+                const data = await response.json();
+                hideTypingIndicator();
+                addSystemMessage(data.content);
+            } catch (error) {
+                hideTypingIndicator();
+                addSystemMessage(generateBotResponse(content));
+            }
+        }
+
+        // Message Creation
+        function createMessageElement(content, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `
+                <div class="message-content">
+                    ${type === 'system' ? `
+                        <div class="message-header">
+                            <div class="avatar"><i class="fas fa-shield-alt"></i></div>
+                            <span class="sender-name">CyberGuard</span>
+                            <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>` : ''}
+                    <p>${content}</p>
+                    ${type === 'user' ? `<div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>` : ''}
+                </div>`;
+            return div;
+        }
+
+        function addUserMessage(content) {
+            elements.messagesContainer.appendChild(createMessageElement(content, 'user'));
+            scrollToBottom();
+        }
+
+        function addSystemMessage(content) {
+            elements.messagesContainer.appendChild(createMessageElement(content, 'system'));
+            scrollToBottom();
+        }
+
+        // Typing Indicator
+        function showTypingIndicator() {
+            if (isTyping) return;
+            isTyping = true;
+            const div = document.createElement('div');
+            div.id = 'typingIndicator';
+            div.className = 'typing-indicator';
+            div.innerHTML = '<div class="message-content"><div class="message-header"><div class="avatar"><i class="fas fa-shield-alt"></i></div>CyberGuard is typing...</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+            elements.messagesContainer.appendChild(div);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator')?.remove();
+            isTyping = false;
+        }
+
+        // Bot Response Generator (same as your original)
+        function generateBotResponse(message) {
+            message = message.toLowerCase();
+            if (message.includes('password')) return "Strong passwords should be at least 12 characters with a mix of letters, numbers, and symbols.";
+            if (message.includes('phishing')) return "Beware of phishing emails. Verify senders and avoid suspicious links.";
+            return "I'm here to help with cybersecurity. What specific topic would you like to discuss?";
+        }
+
+        function scrollToBottom() {
+            elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

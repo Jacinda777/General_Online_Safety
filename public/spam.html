@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon_io/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>Spot the Spam - Beginner Game</title>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #1E40AF;
+            --success: #10B981;
+            --error: #EF4444;
+            --background: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --text-muted: #6B7280;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --sidebar-bg: #1E40AF;
+            --sidebar-hover: #3B82F6;
+            --sidebar-transition: 0.3s ease;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width var(--sidebar-transition);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            justify-content: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 36px;
+            width: auto;
+            transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .logo {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: var(--sidebar-hover);
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #60a5fa;
+        }
+
+        .menu {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .menu li {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .menu li i {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sidebar.collapsed .menu li a {
+            justify-content: center;
+        }
+
+        .menu li span {
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            transition: opacity var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed .menu li span {
+            opacity: 0;
+            display: none;
+        }
+
+        .menu li:hover,
+        .menu li.active {
+            background: var(--sidebar-hover);
+        }
+
+        .menu li:hover i,
+        .menu li.active i {
+            color: white;
+        }
+
+        .sidebar.collapsed .menu li a:hover::after,
+.sidebar.collapsed .menu li a:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(var(--sidebar-collapsed-width) + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar.collapsed .footer a {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .footer i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .footer span {
+            margin-left: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .footer span {
+            opacity: 0;
+            display: none;
+        }
+
+        .footer a:hover {
+            background: var(--sidebar-hover);
+        }
+
+        /* Game Area */
+        .game-area {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            flex-grow: 1;
+            padding: 2rem;
+            transition: all var(--sidebar-transition);
+        }
+
+        .sidebar.collapsed ~ .game-area {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .level {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .scenario-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .scenario-card h3 {
+            font-size: 1.25rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            background: #E6F0FA;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            font-style: italic;
+            color: var(--text);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .buttons button {
+            flex: 1;
+            max-width: 200px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .buttons button.spam {
+            background: var(--error);
+        }
+
+        .buttons button.spam:hover {
+            background: #DC2626;
+        }
+
+        .buttons button.not-spam {
+            background: var(--success);
+        }
+
+        .buttons button.not-spam:hover {
+            background: #059669;
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .score {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .progress-bar {
+            width: 60%;
+            height: 20px;
+            background: #B0C4DE;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.5s;
+        }
+
+        /* Start Game Button */
+        .start-game-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            max-width: 200px;
+            margin: 1rem auto;
+        }
+
+        .start-game-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .start-game-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 300px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .sidebar .menu li span, .sidebar .footer span, .sidebar .logo {
+                display: none;
+                opacity: 0;
+            }
+
+            .sidebar .menu li, .sidebar .footer a {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .game-area {
+                margin-left: var(--sidebar-collapsed-width);
+                width: calc(100% - var(--sidebar-collapsed-width));
+                padding: 1rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .buttons button {
+                max-width: 100%;
+            }
+
+            .start-game-btn {
+                max-width: 100%;
+            }
+
+            .progress-bar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="SafeGuard Logo" class="logo">
+                </div>
+                <button id="toggle-sidebar" class="toggle-btn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="menu">
+                <li class="active">
+                    <a href="chatbot_dashboard.html" data-page="chatbot-dashbpard" data-tooltip="Chatbot Dashboard" title="Chatbot Dashboard" aria-label="Chatbot Dashboard" onclick="showPage('chatbot-dashbpard')">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="news.html" data-page="security-news" data-tooltip="Security News" title="Security News" aria-label="Security News" onclick="showPage('security-news')">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Security News</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="tips.html" data-page="Tips" data-tooltip="Tips" title="Tips" aria-label="Tips" onclick="showPage('tips')">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Did You Know</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="faq.html" data-page="FAQ" data-tooltip="FAQ" title="FAQ" aria-label="FAQ" onclick="showPage('FAQ')">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>FAQ</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
+                        <i class="fas fa-trophy"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
+                        <i class="fas fa-robot"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="footer">
+                <a href="index.html" data-page="logout" data-tooltip="Logout" title="Logout" aria-label="Logout" onclick="showPage('logout')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <div class="header">
+                <h1>Spot the Spam: Beginner Quest</h1>
+            </div>
+
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Welcome, Agent! Ready to spot the spam and protect your inbox?</p>
+                            <button class="start-game-btn" id="start-game-btn" aria-label="Start Game">
+                                <i class="fas fa-play"></i> Start Game
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beginner Level Page -->
+            <div id="beginner-level" class="page">
+                <div class="level">
+                    <div class="game-stats">
+                        <div class="score">Score: <span id="score">0</span></div>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 1: Is it Spam?</h3>
+                        <p class="message">"You’ve won a FREE vacation! Click here to claim: http://winbig.xyz"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(true, 1)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(false, 1)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-1"></p>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 2: Is it Spam?</h3>
+                        <p class="message">"Hi, it’s Mom. Can you send me $20?"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(false, 2)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(true, 2)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-2"></p>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 3: Is it Spam?</h3>
+                        <p class="message">"Email: ‘Your bank account is locked! Click here to unlock: http://secure-bank.co’"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(true, 3)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(false, 3)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-3"></p>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 4: Is it Spam?</h3>
+                        <p class="message">"Text from your friend: ‘Hey, meet me at the café at 5 PM!’"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(false, 4)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(true, 4)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-4"></p>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 5: Is it Spam?</h3>
+                        <p class="message">"Pop-up: ‘Your computer has a virus! Call this number now.’"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(true, 5)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(false, 5)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-5"></p>
+                    </div>
+                    <div class="scenario-card">
+                        <h3>Challenge 6: Is it Spam?</h3>
+                        <p class="message">"Email from your teacher: ‘Here’s the homework for next week.’"</p>
+                        <div class="buttons">
+                            <button class="spam" onclick="checkAnswer(false, 6)" aria-label="Mark as Spam">Spam!</button>
+                            <button class="not-spam" onclick="checkAnswer(true, 6)" aria-label="Mark as Not Spam">Not Spam</button>
+                        </div>
+                        <p class="feedback" id="feedback-6"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intermediate Level Page -->
+            <div id="intermediate-level" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Intermediate Level Coming Soon!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Level Page -->
+            <div id="advanced-level" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Advanced Level Coming Soon!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Page -->
+            <div id="leaderboard" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>Leaderboard</p>
+                            <p>Your Score: <span id="score-leaderboard">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Play Page -->
+            <div id="how-to-play" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>How to Play</p>
+                            <ul>
+                                <li>Identify whether each message is spam or not.</li>
+                                <li>Earn 10 points for each correct answer.</li>
+                                <li>Complete challenges to fill the progress bar!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout Page -->
+            <div id="logout" class="page">
+                <div class="level">
+                    <div class="scenario-card">
+                        <div class="scenario">
+                            <p>You’ve logged out. See you next mission, Agent!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let score = 0;
+        let progress = 0;
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
+            document.querySelector(`.menu a[data-page="${pageId}"]`).parentElement.classList.add('active');
+            if (pageId === 'leaderboard') {
+                document.getElementById('score-leaderboard').textContent = score;
+            }
+            if (pageId === 'logout') {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function checkAnswer(isSpam, challengeNum) {
+            const feedback = document.getElementById(`feedback-${challengeNum}`);
+            const progressBar = document.getElementById('progress');
+            const scoreDisplay = document.getElementById('score');
+
+            const answers = {
+                1: true,  // Challenge 1: Spam
+                2: false, // Challenge 2: Not Spam
+                3: true,  // Challenge 3: Spam
+                4: false, // Challenge 4: Not Spam
+                5: true,  // Challenge 5: Spam
+                6: false  // Challenge 6: Not Spam
+            };
+
+            if (isSpam === answers[challengeNum]) {
+                feedback.textContent = "Correct! Well spotted!";
+                feedback.style.color = "var(--success)";
+                score += 10;
+                progress += 100 / 6; // 16.67% per correct answer (6 challenges)
+            } else {
+                feedback.textContent = "Oops! Try again.";
+                feedback.style.color = "var(--error)";
+            }
+
+            scoreDisplay.textContent = score;
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const toggleIcon = document.getElementById("toggle-icon");
+            sidebar.classList.toggle("collapsed");
+            toggleIcon.classList.toggle("fa-bars");
+            toggleIcon.classList.toggle("fa-arrow-right");
+            document.getElementById("toggle-sidebar").setAttribute(
+                "aria-label",
+                sidebar.classList.contains("collapsed") ? "Expand sidebar" : "Collapse sidebar"
+            );
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
+            document.getElementById('start-game-btn').addEventListener('click', () => {
+                showPage('beginner-level');
+                showToast('Game Started!');
+            });
+        });
+    </script>
+</body>
+</html>
