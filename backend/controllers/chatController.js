@@ -1,94 +1,70 @@
-const ChatMessage = require('../models/ChatMessage');
 const axios = require('axios');
-
-// Environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-// Helper function to call Gemini API
-async function getGeminiResponse(userMessage, history = []) {
-  if (!GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured');
-  }
-
-  try {
-    const response = await axios.post(
-      GEMINI_API_URL,
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: 'You are CyberGuard Assistant, an AI specialized in online safety and cybersecurity. Provide accurate, helpful responses about staying safe online, including topics like passwords, phishing, encryption, malware, VPNs, Wi-Fi security, 2FA, and backups. Keep responses concise and practical.'
-              }
-            ]
-          },
-          ...history.map(msg => ({
-            parts: [{ text: msg.content }],
-            role: msg.isUser ? 'user' : 'model' // Gemini uses 'model' for assistant
-          })),
-          {
-            parts: [{ text: userMessage }],
-            role: 'user'
-          }
-        ],
-        generationConfig: {
-          maxOutputTokens: 1000, // Increased for better responses
-          temperature: 0.7
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    // Check for valid response
-    if (!response.data.candidates || !response.data.candidates[0]?.content?.parts[0]?.text) {
-      throw new Error('Invalid API response format');
-    }
-
-    return response.data.candidates[0].content.parts[0].text.trim();
-  } catch (error) {
-    console.error('Error calling Gemini API:', error.response?.data || error.message);
-    return 'Sorry, I encountered an issue. How can I assist you with online safety?';
-  }
-}
+const Chat = require('../models/Chat');
 
 exports.sendMessage = async (req, res) => {
-  const { message } = req.body;
-
-  if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'Message is required and must be a string' });
-  }
-
+  const { content, sessionId } = req.body;
   try {
-    const userMessageDoc = await ChatMessage.create({ content: message, isUser: true });
+    // Save user message
+    let chat = await Chat.findOne({ chatId: sessionId });
+    if (!chat) {
+      chat = new Chat({ chatId: sessionId, name: `Chat ${sessionId.slice(0, 8)}`, messages: [] });
+    }
+    chat.messages.push({ content, type: 'user', timestamp: new Date() });
+    await chat.save();
 
-    const history = await ChatMessage.find()
-      .sort({ timestamp: -1 })
-      .limit(5)
-      .lean();
-    history.reverse();
+    // Prepare conversation history for Llama 3.1
+    const messages = [
+      { role: 'system', content: 'You are CyberGuard Assistant, a cybersecurity expert. Provide accurate, concise, and practical cybersecurity advice.' },
+      ...chat.messages.map(msg => ({ role: msg.type === 'user' ? 'user' : 'assistant', content: msg.content })),
+      { role: 'user', content }
+    ];
 
-    const reply = await getGeminiResponse(message, history);
+    // Call Hugging Face Inference API
+    const response = await axios.post(
+      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-70B-Instruct',
+      { inputs: messages, parameters: { max_new_tokens: 500, temperature: 0.7 } },
+      { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+    );
 
-    await ChatMessage.create({ content: reply, isUser: false });
+    // Extract the assistant's response
+    const botResponse = response.data[0].generated_text.find(msg => msg.role === 'assistant')?.content || 'Sorry, I couldn’t process that. Try again!';
+    
+    // Save bot response
+    chat.messages.push({ content: botResponse, type: 'system', timestamp: new Date() });
+    await chat.save();
 
-    res.json({ reply });
+    res.json({ content: botResponse });
   } catch (error) {
-    console.error('Error in sendMessage:', error);
-    res.status(500).json({ reply: 'An error occurred. Please try again.' });
+    console.error('Error in sendMessage:', error.message);
+    res.status(500).json({ content: 'Sorry, something went wrong. Try again later.' });
   }
 };
 
-exports.getHistory = async (req, res) => {
+exports.getChats = async (req, res) => {
   try {
-    const messages = await ChatMessage.find().sort({ timestamp: 1 });
-    res.json({ messages });
+    const chats = await Chat.find();
+    res.json(chats);
   } catch (error) {
-    console.error('Error in getHistory:', error);
-    res.status(500).json({ error: 'Failed to fetch message history' });
+    res.status(500).json({ error: 'Failed to fetch chats' });
+  }
+};
+
+exports.updateChatName = async (req, res) => {
+  const { chatId, newName } = req.body;
+  try {
+    await Chat.findOneAndUpdate({ chatId }, { name: newName });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to rename chat' });
+  }
+};
+
+exports.deleteChat = async (req, res) => {
+  const { chatId } = req.params;
+  try {
+    await Chat.findOneAndDelete({ chatId });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete chat' });
   }
 };
