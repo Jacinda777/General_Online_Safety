@@ -1,8 +1,17 @@
-const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Chat = require('../models/Chat');
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 exports.sendMessage = async (req, res) => {
   const { content, sessionId } = req.body;
+
+  if (!content || !sessionId) {
+    return res.status(400).json({ error: 'Content and sessionId are required' });
+  }
+
   try {
     // Save user message
     let chat = await Chat.findOne({ chatId: sessionId });
@@ -12,28 +21,23 @@ exports.sendMessage = async (req, res) => {
     chat.messages.push({ content, type: 'user', timestamp: new Date() });
     await chat.save();
 
-    // Prepare conversation history for Llama 3.1
-    const messages = [
-      { role: 'system', content: 'You are CyberGuard Assistant, a cybersecurity expert. Provide accurate, concise, and practical cybersecurity advice.' },
-      ...chat.messages.map(msg => ({ role: msg.type === 'user' ? 'user' : 'assistant', content: msg.content })),
-      { role: 'user', content }
-    ];
+    // Prepare conversation history for Gemini
+    const conversationHistory = chat.messages
+      .map(msg => `${msg.type === 'user' ? 'User' : 'CyberGuard'}: ${msg.content}`)
+      .join('\n') + `\nUser: ${content}`;
 
-    // Call Hugging Face Inference API
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-70B-Instruct',
-      { inputs: messages, parameters: { max_new_tokens: 500, temperature: 0.7 } },
-      { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
-    );
+    // System prompt for CyberGuard Assistant
+    const prompt = `You are CyberGuard Assistant, a cybersecurity expert. Provide accurate, concise, and practical cybersecurity advice. Use the following conversation history for context:\n\n${conversationHistory}\n\nCyberGuard:`;
 
-    // Extract the assistant's response
-    const botResponse = response.data[0].generated_text.find(msg => msg.role === 'assistant')?.content || 'Sorry, I couldn’t process that. Try again!';
-    
+    // Call Gemini API
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+
     // Save bot response
-    chat.messages.push({ content: botResponse, type: 'system', timestamp: new Date() });
+    chat.messages.push({ content: responseText, type: 'system', timestamp: new Date() });
     await chat.save();
 
-    res.json({ content: botResponse });
+    res.json({ content: responseText });
   } catch (error) {
     console.error('Error in sendMessage:', error.message);
     res.status(500).json({ content: 'Sorry, something went wrong. Try again later.' });
@@ -45,6 +49,7 @@ exports.getChats = async (req, res) => {
     const chats = await Chat.find();
     res.json(chats);
   } catch (error) {
+    console.error('Error fetching chats:', error.message);
     res.status(500).json({ error: 'Failed to fetch chats' });
   }
 };
@@ -55,6 +60,7 @@ exports.updateChatName = async (req, res) => {
     await Chat.findOneAndUpdate({ chatId }, { name: newName });
     res.json({ success: true });
   } catch (error) {
+    console.error('Error renaming chat:', error.message);
     res.status(500).json({ error: 'Failed to rename chat' });
   }
 };
@@ -65,6 +71,7 @@ exports.deleteChat = async (req, res) => {
     await Chat.findOneAndDelete({ chatId });
     res.json({ success: true });
   } catch (error) {
+    console.error('Error deleting chat:', error.message);
     res.status(500).json({ error: 'Failed to delete chat' });
   }
 };

@@ -413,46 +413,6 @@
             align-items: center;
         }
 
-        .chat-input-container {
-            padding: 16px;
-            background: #fff;
-            border-top: 1px solid #eceff1;
-        }
-
-        .input-wrapper {
-            display: flex;
-            background: #f5f7fa;
-            border-radius: 24px;
-            padding: 6px;
-            transition: box-shadow var(--sidebar-transition);
-        }
-
-        .input-wrapper:focus-within {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 0.95rem;
-            color: var(--text-color);
-        }
-
-        #sendMessageBtn {
-            background: var(--accent-color);
-            border: none;
-            color: #fff;
-            padding: 0 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background var(--sidebar-transition);
-            display: flex;
-            align-items: center;
-        }
-
         #sendMessageBtn:hover {
             background: #00c853;
         }
@@ -800,6 +760,7 @@
             toggleIcon: document.getElementById('toggleIcon')
         };
 
+        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://your-production-domain.com';
         let currentChatId = Math.random().toString(36).slice(2);
         let isTyping = false;
 
@@ -847,19 +808,33 @@
         // Chat Management
         async function initializeChat() {
             try {
-                const response = await fetch('/api/chats');
-                if (!response.ok) throw new Error('Failed to fetch chats');
+                const response = await fetch(`${API_BASE_URL}/api/chat/chats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Backend server not found. Please ensure the server is running.');
+                    }
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch chats');
+                }
                 const chats = await response.json();
                 const currentChat = chats.find(chat => chat.chatId === currentChatId);
-                if (!currentChat) {
-                    await createNewChat();
-                } else {
+                if (currentChat) {
                     loadChatMessages(currentChatId);
+                } else {
+                    await createNewChat();
                 }
                 addSystemMessage("Hi! I'm CyberGuard Assistant. Ask me anything about cybersecurity!");
             } catch (error) {
                 console.error('Error initializing chat:', error);
-                addSystemMessage("Hi! I'm CyberGuard Assistant. Ask me anything about cybersecurity!");
+                addSystemMessage(
+                    error.message.includes('Backend server not found') 
+                        ? 'Unable to connect to the server. Please ensure the server is running and try again later.' 
+                        : 'Hi! I’m CyberGuard Assistant. Ask me anything about cybersecurity! (Offline mode active)'
+                );
+                createNewChat();
             }
         }
 
@@ -868,22 +843,19 @@
             elements.messagesContainer.innerHTML = '';
             addSystemMessage("Hi! I'm CyberGuard Assistant. Ask me anything about cybersecurity!");
             elements.messageInput.focus();
-            try {
-                await fetch('/api/messages', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: 'Initialize new chat', sessionId: currentChatId })
-                });
-            } catch (error) {
-                console.error('Error creating new chat:', error);
-            }
         }
 
         async function loadChatMessages(chatId) {
             elements.messagesContainer.innerHTML = '';
             try {
-                const response = await fetch('/api/chats');
-                if (!response.ok) throw new Error('Failed to fetch chats');
+                const response = await fetch(`${API_BASE_URL}/api/chat/chats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch chats');
+                }
                 const chats = await response.json();
                 const chat = chats.find(c => c.chatId === chatId);
                 if (chat && chat.messages.length) {
@@ -897,6 +869,7 @@
                 }
             } catch (error) {
                 console.error('Error loading chat messages:', error);
+                addSystemMessage(error.message || 'Failed to load chat messages. Please try again.');
             }
         }
 
@@ -916,32 +889,59 @@
             showTypingIndicator();
 
             try {
-                const response = await fetch('/api/messages', {
+                const response = await fetch(`${API_BASE_URL}/api/chat/messages`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content, sessionId: currentChatId })
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content, sessionId: currentChatId }),
+                    credentials: 'include'
                 });
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    if (response.status === 404) {
+                        throw new Error('Backend server not found. Please ensure the server is running.');
+                    }
+                    if (response.status === 429) {
+                        throw new Error(errorData.content || 'Rate limit reached. Please try again later.');
+                    }
+                    if (response.status === 400 && errorData.error === 'Content and sessionId are required') {
+                        throw new Error('Please enter a valid message.');
+                    }
+                    throw new Error(errorData.content || errorData.error || 'Something went wrong.');
+                }
                 const data = await response.json();
                 hideTypingIndicator();
                 addSystemMessage(data.content);
 
-                // Update chat name based on first user message
-                const responseChats = await fetch('/api/chats');
+                // Update chat name only for the first user message
+                const responseChats = await fetch(`${API_BASE_URL}/api/chat/chats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
                 const chats = await responseChats.json();
                 const chat = chats.find(c => c.chatId === currentChatId);
                 if (chat && chat.messages.filter(m => m.type === 'user').length === 1) {
                     const newName = extractKeywords(content);
-                    await fetch('/api/chats', {
+                    await fetch(`${API_BASE_URL}/api/chat`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chatId: currentChatId, newName })
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ chatId: currentChatId, newName }),
+                        credentials: 'include'
                     });
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
-                addSystemMessage('Sorry, something went wrong. Try again later.');
+                addSystemMessage(
+                    error.message.includes('Backend server not found') 
+                        ? 'Unable to connect to the server. Please ensure the server is running and try again later.'
+                        : error.message.includes('Rate limit reached')
+                          ? 'Rate limit reached. Please try again later.'
+                          : error.message
+                );
             }
         }
 
@@ -977,8 +977,14 @@
         async function showChatHistory() {
             elements.historyContainer.innerHTML = '';
             try {
-                const response = await fetch('/api/chats');
-                if (!response.ok) throw new Error('Failed to fetch chats');
+                const response = await fetch(`${API_BASE_URL}/api/chat/chats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch chats');
+                }
                 const chats = await response.json();
                 chats.forEach(chat => {
                     const chatDiv = document.createElement('div');
@@ -1034,14 +1040,22 @@
                         const newName = renameInput.value.trim();
                         if (newName) {
                             try {
-                                await fetch('/api/chats', {
+                                const response = await fetch(`${API_BASE_URL}/api/chat`, {
                                     method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ chatId: chat.chatId, newName })
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ chatId: chat.chatId, newName }),
+                                    credentials: 'include'
                                 });
+                                if (!response.ok) {
+                                    const errorData = await response.json();
+                                    throw new Error(errorData.error || 'Failed to rename chat');
+                                }
                                 chatDiv.querySelector('.history-chat-title').textContent = newName;
                             } catch (error) {
                                 console.error('Error renaming chat:', error);
+                                alert(error.message || 'Failed to rename chat');
                             }
                         }
                         chatDiv.querySelector('.history-chat-title').style.display = 'block';
@@ -1065,9 +1079,19 @@
                         e.stopPropagation();
                         if (!confirm('Are you sure you want to delete this chat?')) return;
                         try {
-                            await fetch(`/api/chats/${chat.chatId}`, { method: 'DELETE' });
+                            const response = await fetch(`${API_BASE_URL}/api/chat/${chat.chatId}`, {
+                                method: 'DELETE',
+                                credentials: 'include'
+                            });
+                            if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(errorData.error || 'Failed to delete chat');
+                            }
                             if (currentChatId === chat.chatId) {
-                                const responseChats = await fetch('/api/chats');
+                                const responseChats = await fetch(`${API_BASE_URL}/api/chat/chats`, {
+                                    method: 'GET',
+                                    credentials: 'include'
+                                });
                                 const updatedChats = await responseChats.json();
                                 if (updatedChats.length > 0) {
                                     currentChatId = updatedChats[updatedChats.length - 1].chatId;
@@ -1079,6 +1103,7 @@
                             showChatHistory();
                         } catch (error) {
                             console.error('Error deleting chat:', error);
+                            alert(error.message || 'Failed to delete chat');
                         }
                     });
 
@@ -1087,7 +1112,7 @@
                 elements.historyModal.classList.add('open');
             } catch (error) {
                 console.error('Error fetching chat history:', error);
-                elements.historyContainer.innerHTML = '<p>Failed to load chat history.</p>';
+                elements.historyContainer.innerHTML = `<p>${error.message || 'Failed to load chat history.'}</p>`;
             }
         }
 

@@ -1,3 +1,10 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
+console.log('Loaded environment variables:', {
+    PORT: process.env.PORT,
+    MONGO_URI: process.env.MONGO_URI,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    NODE_ENV: process.env.NODE_ENV
+});
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -12,7 +19,7 @@ const securityRoutes = require('./routes/securityRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
-dotenv.config();
+// dotenv.config();
 
 const app = express();
 
