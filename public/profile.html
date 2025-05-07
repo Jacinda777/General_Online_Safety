@@ -83,7 +83,7 @@
         }
 
         .logo {
-            max-height: 36px;
+            height: 15vh;
             width: auto;
             transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
         }
@@ -742,12 +742,12 @@
                         <span>FAQ</span>
                     </a>
                 </li>
-                <li>
+                <!-- <li>
                     <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
                         <i class="fas fa-trophy"></i>
                         <span>Leaderboard</span>
                     </a>
-                </li>
+                </li> -->
                 <li>
                     <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
                         <i class="fas fa-robot"></i>
@@ -875,7 +875,7 @@
     <script>
         // Base URL for the backend API
         const API_BASE_URL = 'http://localhost:3000/api/profile';
-
+    
         // Sidebar Management
         const sidebar = document.getElementById('sidebar');
         function toggleSidebar() {
@@ -888,12 +888,12 @@
                 sidebar.classList.contains('collapsed') ? 'Expand sidebar' : 'Collapse sidebar'
             );
         }
-
+    
         function setActive(element) {
             document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
             element.classList.add('active');
         }
-
+    
         function handleResponsiveSidebar() {
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('collapsed');
@@ -901,7 +901,7 @@
                 sidebar.classList.remove('collapsed');
             }
         }
-
+    
         // Page Navigation
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -917,11 +917,11 @@
                 window.location.href = 'index.html';
             }
         }
-
+    
         function showLeaderboard() {
             window.location.href = 'leaderboard.html';
         }
-
+    
         // Toast Notification
         function showToast(message, type = 'info', duration = 3000) {
             const toast = document.getElementById('toast');
@@ -932,14 +932,14 @@
                 toast.classList.remove('show');
             }, duration);
         }
-
+    
         // Data Fetcher
         window.DataFetcher = {
             async fetchProfile() {
                 try {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('No token found');
-
+    
                     const response = await fetch(`${API_BASE_URL}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -957,10 +957,10 @@
                         throw new Error(errorData.message || 'Failed to fetch profile');
                     }
                     const data = await response.json();
-                    console.log('Profile fetched successfully:', data); // Debug log
+                    console.log('Profile fetched successfully:', data);
                     return data;
                 } catch (error) {
-                    console.error('Failed to fetch profile:', error.message); // Debug log
+                    console.error('Failed to fetch profile:', error.message);
                     showToast(error.message === 'No token found' || error.message === 'User not found. Please login again.' ? 'Please login to continue' : 'Failed to load profile.', 'error');
                     if (error.message === 'No token found' || error.message === 'User not found. Please login again.') {
                         showLoginModal();
@@ -972,8 +972,8 @@
                 try {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('No token found');
-
-                    console.log('Saving profile with data:', profile); // Debug log
+    
+                    console.log('Saving profile with data:', profile);
                     const response = await fetch(`${API_BASE_URL}`, {
                         method: 'PUT',
                         headers: {
@@ -994,10 +994,10 @@
                         throw new Error(errorData.message || 'Failed to save profile');
                     }
                     const result = await response.json();
-                    console.log('Profile saved successfully:', result); // Debug log
+                    console.log('Profile saved successfully:', result);
                     return result;
                 } catch (error) {
-                    console.error('Failed to save profile:', error.message); // Debug log
+                    console.error('Failed to save profile:', error.message);
                     let errorMessage = 'Failed to save profile.';
                     if (error.message === 'User not found. Please login again.') {
                         errorMessage = 'Please login to continue';
@@ -1017,7 +1017,7 @@
                 try {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('No token found');
-
+    
                     const response = await fetch(`${API_BASE_URL}/security`, {
                         method: 'PUT',
                         headers: {
@@ -1038,10 +1038,10 @@
                         throw new Error(errorData.message || 'Failed to update settings');
                     }
                     const result = await response.json();
-                    console.log('Security settings updated:', result); // Debug log
+                    console.log('Security settings updated:', result);
                     return result;
                 } catch (error) {
-                    console.error('Failed to update security settings:', error.message); // Debug log
+                    console.error('Failed to update security settings:', error.message);
                     showToast(error.message === 'User not found. Please login again.' ? 'Please login to continue' : 'Failed to update settings.', 'error');
                     if (error.message === 'User not found. Please login again.') {
                         showLoginModal();
@@ -1053,7 +1053,7 @@
                 try {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('No token found');
-
+    
                     const response = await fetch(`${API_BASE_URL}`, {
                         method: 'DELETE',
                         headers: {
@@ -1072,10 +1072,10 @@
                         throw new Error(errorData.message || 'Failed to delete account');
                     }
                     const result = await response.json();
-                    console.log('Account deleted successfully:', result); // Debug log
+                    console.log('Account deleted successfully:', result);
                     return result;
                 } catch (error) {
-                    console.error('Failed to delete account:', error.message); // Debug log
+                    console.error('Failed to delete account:', error.message);
                     showToast(error.message === 'User not found. Please login again.' ? 'Please login to continue' : 'Failed to delete account.', 'error');
                     if (error.message === 'User not found. Please login again.') {
                         showLoginModal();
@@ -1100,11 +1100,11 @@
                         throw new Error(errorData.message || 'Login failed');
                     }
                     const data = await response.json();
-                    console.log('Login successful:', data); // Debug log
+                    console.log('Login successful:', data);
                     localStorage.setItem('token', data.token);
                     return data;
                 } catch (error) {
-                    console.error('Login failed:', error.message); // Debug log
+                    console.error('Login failed:', error.message);
                     let errorMessage = error.message || 'Login failed';
                     if (error.message.includes('Failed to fetch')) {
                         errorMessage = 'Network error. Please check your connection and try again.';
@@ -1114,10 +1114,10 @@
                 }
             }
         };
-
+    
         // Profile Management
         let currentProfile = null;
-
+    
         async function loadProfile() {
             const profile = await window.DataFetcher.fetchProfile();
             if (profile) {
@@ -1138,49 +1138,49 @@
                 document.getElementById('retry-profile').addEventListener('click', loadProfile);
             }
         }
-
+    
         function renderProfile(profile) {
-            document.getElementById('name').value = profile.name;
-            document.getElementById('email').value = profile.email;
+            document.getElementById('name').value = profile.name || '';
+            document.getElementById('email').value = profile.email || '';
             document.getElementById('bio').value = profile.bio || '';
             document.getElementById('phone').value = profile.phone || '';
-            document.getElementById('role').value = profile.role;
-            document.getElementById('profile-image').src = profile.avatar;
-            document.getElementById('profile-image').alt = `Profile picture for ${profile.name}`;
-            document.getElementById('two-factor').checked = profile.twoFactorEnabled;
-            document.getElementById('notifications').checked = profile.receiveNotifications;
+            document.getElementById('role').value = profile.role || 'User';
+            document.getElementById('profile-image').src = profile.avatar || 'images/avatars/avatar1.png';
+            document.getElementById('profile-image').alt = `Profile picture for ${profile.name || 'User'}`;
+            document.getElementById('two-factor').checked = profile.twoFactorEnabled || false;
+            document.getElementById('notifications').checked = profile.receiveNotifications || false;
             document.querySelectorAll('.avatar-option').forEach(option => {
                 option.classList.toggle('selected', option.dataset.avatar === profile.avatar.split('/').pop());
             });
             document.getElementById('profile-picture').value = '';
         }
-
+    
         function renderStats(stats) {
             const statsContainer = document.getElementById('stats-container');
             statsContainer.innerHTML = `
                 <div class="stat-card">
                     <h3>Articles Read</h3>
-                    <p>${stats.articlesRead}</p>
+                    <p>${stats.articlesRead || 0}</p>
                 </div>
                 <div class="stat-card">
                     <h3>Tips Viewed</h3>
-                    <p>${stats.tipsViewed}</p>
+                    <p>${stats.tipsViewed || 0}</p>
                 </div>
                 <div class="stat-card">
                     <h3>Profile Completion</h3>
-                    <p>${stats.profileCompletion}%</p>
+                    <p>${stats.profileCompletion || 0}%</p>
                 </div>
             `;
         }
-
+    
         function updateProfileCompletion(profile) {
             const fields = [profile.name, profile.email, profile.bio, profile.phone, profile.avatar];
             const filled = fields.filter(field => field && field.trim()).length;
             const completion = Math.round((filled / fields.length) * 100);
             document.getElementById('profile-progress').style.width = `${completion}%`;
-            currentProfile.stats.profileCompletion = completion;
+            if (currentProfile) currentProfile.stats.profileCompletion = completion;
         }
-
+    
         function validateProfile(profile) {
             let isValid = true;
             const errors = {
@@ -1190,23 +1190,23 @@
                 phone: document.getElementById('phone-error')
             };
             Object.values(errors).forEach(error => error.style.display = 'none');
-
-            if (!profile.name.trim()) {
+    
+            if (!profile.name || !profile.name.trim()) {
                 errors.name.style.display = 'block';
                 isValid = false;
             }
-
+    
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(profile.email)) {
+            if (!profile.email || !emailRegex.test(profile.email)) {
                 errors.email.style.display = 'block';
                 isValid = false;
             }
-
+    
             if (profile.bio && profile.bio.length > 150) {
                 errors.bio.style.display = 'block';
                 isValid = false;
             }
-
+    
             if (profile.phone) {
                 const phoneRegex = /^\+?\d{1,4}[-.\s]?\d{1,14}$/;
                 if (!phoneRegex.test(profile.phone)) {
@@ -1214,35 +1214,33 @@
                     isValid = false;
                 }
             }
-
+    
             return isValid;
         }
-
+    
         // Login Modal
         function showLoginModal() {
             document.getElementById('login-modal').style.display = 'flex';
         }
-
+    
         function setupEventListeners() {
             // Form Submission
             document.getElementById('profile-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const profile = {
-                    name: document.getElementById('name').value,
-                    email: document.getElementById('email').value,
-                    bio: document.getElementById('bio').value,
-                    phone: document.getElementById('phone').value,
-                    role: document.getElementById('role').value,
+                    name: document.getElementById('name').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    bio: document.getElementById('bio').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
                     avatar: document.getElementById('profile-image').src,
                     twoFactorEnabled: document.getElementById('two-factor').checked,
                     receiveNotifications: document.getElementById('notifications').checked,
-                    stats: currentProfile.stats
+                    stats: currentProfile ? currentProfile.stats : { articlesRead: 0, tipsViewed: 0, profileCompletion: 0 }
                 };
-
+    
                 if (validateProfile(profile)) {
                     const result = await window.DataFetcher.saveProfile(profile);
                     if (result.success !== false) {
-                        // Re-fetch the profile to ensure UI reflects backend state
                         const updatedProfile = await window.DataFetcher.fetchProfile();
                         if (updatedProfile) {
                             currentProfile = updatedProfile;
@@ -1256,7 +1254,7 @@
                     }
                 }
             });
-
+    
             // Cancel Button
             document.getElementById('cancel-btn').addEventListener('click', () => {
                 if (currentProfile) {
@@ -1265,7 +1263,7 @@
                     showToast('Changes discarded', 'info');
                 }
             });
-
+    
             // Image Upload
             document.getElementById('profile-picture').addEventListener('change', (e) => {
                 const file = e.target.files[0];
@@ -1293,7 +1291,7 @@
                     reader.readAsDataURL(file);
                 }
             });
-
+    
             // Avatar Selection
             document.querySelectorAll('.avatar-option').forEach(option => {
                 option.addEventListener('click', () => {
@@ -1308,7 +1306,7 @@
                     });
                 });
             });
-
+    
             // 2FA Toggle
             document.getElementById('two-factor').addEventListener('change', async (e) => {
                 const result = await window.DataFetcher.updateSecuritySettings({
@@ -1322,7 +1320,7 @@
                     e.target.checked = !e.target.checked; // Revert on failure
                 }
             });
-
+    
             // Notifications Checkbox
             document.getElementById('notifications').addEventListener('change', async (e) => {
                 const result = await window.DataFetcher.updateSecuritySettings({
@@ -1336,16 +1334,16 @@
                     e.target.checked = !e.target.checked; // Revert on failure
                 }
             });
-
+    
             // Delete Account
             document.getElementById('delete-btn').addEventListener('click', () => {
                 document.getElementById('delete-modal').style.display = 'flex';
             });
-
+    
             document.getElementById('cancel-modal').addEventListener('click', () => {
                 document.getElementById('delete-modal').style.display = 'none';
             });
-
+    
             document.getElementById('confirm-delete').addEventListener('click', async () => {
                 const result = await window.DataFetcher.deleteAccount();
                 if (result.success) {
@@ -1357,17 +1355,17 @@
                 }
                 document.getElementById('delete-modal').style.display = 'none';
             });
-
+    
             // Login Button
             document.getElementById('login-btn').addEventListener('click', async () => {
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
-
+    
                 if (!email || !password) {
                     showToast('Please enter email and password', 'error');
                     return;
                 }
-
+    
                 try {
                     await window.DataFetcher.login(email, password);
                     document.getElementById('login-modal').style.display = 'none';
@@ -1378,7 +1376,7 @@
                 }
             });
         }
-
+    
         // Logout Function
         function logout() {
             localStorage.removeItem('token');
@@ -1387,7 +1385,7 @@
                 window.location.href = 'index.html';
             }, 2000);
         }
-
+    
         // Main Application Logic
         (function() {
             async function initializeApp() {
@@ -1395,7 +1393,7 @@
                     handleResponsiveSidebar();
                     document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
                     window.addEventListener('resize', handleResponsiveSidebar);
-
+    
                     if (!localStorage.getItem('token')) {
                         showLoginModal();
                     } else {
@@ -1407,7 +1405,7 @@
                     showToast('Failed to initialize profile page', 'error');
                 }
             }
-
+    
             document.addEventListener('DOMContentLoaded', initializeApp);
         })();
     </script>

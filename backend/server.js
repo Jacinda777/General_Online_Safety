@@ -3,7 +3,8 @@ console.log('Loaded environment variables:', {
     PORT: process.env.PORT,
     MONGO_URI: process.env.MONGO_URI,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    NODE_ENV: process.env.NODE_ENV
+    NODE_ENV: process.env.NODE_ENV,
+    NEWS_API_KEY: process.env.NEWS_API_KEY
 });
 const express = require('express');
 const mongoose = require('mongoose');
@@ -18,6 +19,7 @@ const userRoutes = require('./routes/userRoutes');
 const securityRoutes = require('./routes/securityRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const newsRoutes = require('./routes/newsRoutes');
 
 // dotenv.config();
 
@@ -50,6 +52,7 @@ app.use('/api/security', securityRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api', newsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

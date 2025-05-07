@@ -68,8 +68,8 @@ body {
 }
 
 .logo {
-    max-width: 100%;
-    max-height: 80px;
+    height: 15vh;
+    width: auto;
     transition: opacity var(--sidebar-transition);
 }
 

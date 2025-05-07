@@ -83,7 +83,7 @@
         }
 
         .logo {
-            max-height: 36px;
+            height: 15vh;
             width: auto;
             transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
         }
@@ -178,22 +178,22 @@
         }
 
         .sidebar.collapsed .menu li a:hover::after,
-.sidebar.collapsed .menu li a:focus::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: calc(var(--sidebar-collapsed-width) + 10px);
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--card-bg);
-    color: var(--text);
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--primary);
-    font-size: 0.875rem;
-    white-space: nowrap;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
- }
+        .sidebar.collapsed .menu li a:focus::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(var(--sidebar-collapsed-width) + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--primary);
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
         .footer {
             padding: 1rem;
@@ -433,12 +433,12 @@
                         <span>FAQ</span>
                     </a>
                 </li>
-                <li>
+                <!-- <li>
                     <a href="leaderboard.html" aria-label="Leaderboard" onclick="showLeaderboard()">
                         <i class="fas fa-trophy"></i>
                         <span>Leaderboard</span>
                     </a>
-                </li>
+                </li> -->
                 <li>
                     <a href="chatbot.html" data-page="chatbot" data-tooltip="Chatbot" title="Chatbot" aria-label="Chatbot" onclick="showPage('Chatbot')">
                         <i class="fas fa-robot"></i>
@@ -516,67 +516,21 @@
 
         // Data Fetcher
         window.DataFetcher = {
-            async fetchSecurityNews() {
-                try {
-                    return [
-                        {
-                            title: 'Judge blocks DOGE access to sensitive Social Security data',
-                            source: 'NPR',
-                            date: '2025-04-18',
-                            description: 'A federal judge in Maryland granted a preliminary injunction barring DOGE staffers from accessing non-anonymized personal data at the Social Security Administration.',
-                            url: 'https://www.npr.org'
-                        },
-                        {
-                            title: 'Zambian cyber-security law: US embassy issues alert',
-                            source: 'BBC',
-                            date: '2025-04-17',
-                            description: 'The US says Zambia’s new Cyber Security Act, empowering law enforcement to seize computers, is more intrusive than equivalents in other countries.',
-                            url: 'https://www.bbc.com'
-                        },
-                        {
-                            title: 'US agency extends support for cyber vulnerability database',
-                            source: 'Reuters',
-                            date: '2025-04-16',
-                            description: 'The Cybersecurity and Infrastructure Security Agency extended funding for the CVE database for 11 months, ensuring no lapse in critical vulnerability tracking.',
-                            url: 'https://www.reuters.com'
-                        },
-                        {
-                            title: 'US Govt. Funding for MITRE’s CVE Ends April 16',
-                            source: 'The Hacker News',
-                            date: '2025-04-15',
-                            description: 'The CVE program faced a funding cutoff, risking delays in vulnerability tracking, but CISA’s last-minute extension avoided a service break.',
-                            url: 'https://thehackernews.com'
-                        },
-                        {
-                            title: 'DOGE may have caused cybersecurity breach at US labor watchdog',
-                            source: 'Reuters',
-                            date: '2025-04-15',
-                            description: 'A whistleblower complaint suggests Elon Musk’s DOGE team may have caused a significant cybersecurity breach of sensitive case files at the federal labor watchdog.',
-                            url: 'https://www.reuters.com'
-                        },
-                        {
-                            title: 'Chinese Hacking Group Uses Open-Source Tools',
-                            source: 'CyberScoop',
-                            date: '2025-04-17',
-                            description: 'A Chinese state-sponsored group was observed using open-source offensive security tools to blend with cybercriminal activity.',
-                            url: 'https://www.cyberscoop.com'
-                        },
-                        {
-                            title: 'Mobile Spyware Attacks on the Rise',
-                            source: 'Cybersecurity Snapshot',
-                            date: '2025-04-18',
-                            description: 'Cyber agencies warn of increasing mobile spyware attacks targeting personal devices.',
-                            url: 'https://www.cybersecuritysnapshot.com'
-                        }
-                    ];
-                } catch (error) {
-                    console.error('Failed to fetch security news:', error);
-                    showToast('Failed to load security news.', 'error');
-                    return [];
-                }
+    async fetchSecurityNews() {
+        try {
+            const response = await fetch('http://localhost:3000/api/security-news');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        };
-
+            const news = await response.json();
+            return news;
+        } catch (error) {
+            console.error('Failed to fetch security news:', error);
+            showToast('Failed to load security news.', 'error');
+            return [];
+        }
+    }
+};
         // Main Application Logic
         (function() {
             const newsContainer = document.getElementById('news-container');

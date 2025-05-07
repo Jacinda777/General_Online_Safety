@@ -8,18 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #3B82F6;
-            --secondary: #1E40AF;
+            --primary: #2563eb;
+            --secondary: #f8fafc;
             --text-color: #212121;
-            --accent-color: #00e676;
-            --sidebar-bg: #ffffff;
+            --accent-color: #3b82f6;
+            --sidebar-bg: #1e3a8a;
             --chat-bg: linear-gradient(135deg, #ede7f6 0%, #f5f5f5 100%);
             --sidebar-transition: 0.3s ease;
             --border-radius: 16px;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
-            --sidebar-hover: #e8f0fe;
+            --sidebar-hover: #3b82f6;
             --card-bg: #ffffff;
             --text: #212121;
         }
@@ -51,19 +51,18 @@
 
         /* Sidebar */
         .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: var(--sidebar-bg);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: width var(--sidebar-transition), transform var(--sidebar-transition);
-            z-index: 100;
-            overflow-y: auto;
-        }
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: width var(--sidebar-transition);
+      z-index: 100;
+      overflow-y: auto;
+    }
 
         .sidebar.collapsed {
             width: var(--sidebar-collapsed-width);
@@ -98,7 +97,7 @@
         }
 
         .logo {
-            max-height: 36px;
+            height: 15vh;
             width: auto;
             transition: opacity var(--sidebar-transition), width var(--sidebar-transition);
         }
@@ -147,6 +146,10 @@
         .sidebar.collapsed .menu li {
             justify-content: center;
             padding: 0.75rem;
+        }
+        
+        .menu li span{
+            color: white;
         }
 
         .menu li i {
@@ -241,6 +244,7 @@
         }
 
         .footer span {
+            color: #fff;
             margin-left: 0.75rem;
             font-weight: 500;
         }
@@ -286,27 +290,18 @@
         }
 
         .chat-header {
-            padding: 15px 20px;
+            padding: 15px;
             background: #fff;
-            border-bottom: 1px solid #eceff1;
+            border: 1px solid #eceff1;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
         }
 
         .chat-header h1 {
             font-size: 1.25rem;
             font-weight: 500;
             color: var(--primary);
-        }
-
-        .chat-header .toggle-btn {
-            background: none;
-            color: var(--primary);
-        }
-
-        .chat-header .toggle-btn:hover {
-            background: #e8f0fe;
         }
 
         .messages-container {
@@ -654,12 +649,12 @@
             </button>
         </div>
         <ul class="menu">
-            <li>
+            <!-- <li>
                 <button id="newChatBtn" data-tooltip="New Chat" aria-label="New Chat">
                     <i class="fas fa-plus"></i>
                     <span>New Chat</span>
                 </button>
-            </li>
+            </li> -->
             <li>
                 <a href="chatbot_dashboard.html" data-tooltip="Home" aria-label="Home">
                     <i class="fas fa-home"></i>
@@ -684,24 +679,24 @@
                     <span>FAQ</span>
                 </a>
             </li>
-            <li>
+            <!-- <li>
                 <a href="leaderboard.html" data-tooltip="Leaderboard" aria-label="Leaderboard">
                     <i class="fas fa-trophy"></i>
                     <span>Leaderboard</span>
                 </a>
-            </li>
+            </li> -->
             <li class="active" aria-current="page">
                 <a href="chatbot.html" data-tooltip="Chatbot" aria-label="Chatbot">
                     <i class="fas fa-robot"></i>
                     <span>Chatbot</span>
                 </a>
             </li>
-            <li>
+            <!-- <li>
                 <a href="#" id="viewHistoryBtn" data-tooltip="Chat History" aria-label="Chat History">
                     <i class="fas fa-history"></i>
                     <span>Chat History</span>
                 </a>
-            </li>
+            </li> -->
         </ul>
         <div class="footer">
             <a href="index.html" data-tooltip="Logout" aria-label="Logout">
@@ -716,9 +711,6 @@
         <div class="chat-container">
             <div class="chat-area">
                 <div class="chat-header">
-                    <button id="mobileToggleBtn" class="toggle-btn" aria-label="Toggle sidebar">
-                        <i class="fas fa-bars"></i>
-                    </button>
                     <h1>CyberGuard Assistant</h1>
                 </div>
                 <div class="messages-container" id="messagesContainer"></div>
@@ -841,7 +833,7 @@
         async function createNewChat() {
             currentChatId = Math.random().toString(36).slice(2);
             elements.messagesContainer.innerHTML = '';
-            addSystemMessage("Hi! I'm CyberGuard Assistant. Ask me anything about cybersecurity!");
+            // addSystemMessage("Hi! I'm CyberGuard Assistant. Ask me anything about cybersecurity!");
             elements.messageInput.focus();
         }
 
